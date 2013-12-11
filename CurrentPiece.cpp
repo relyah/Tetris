@@ -10,7 +10,7 @@
 CurrentPiece::CurrentPiece() {
 	top = 0;
 	left = 0;
-	sideLength = 10;
+	sideLength = 2;
 
 	//reset all pieces
 	for (PieceArray::iterator c = piece.begin(); c != piece.end(); ++c) {

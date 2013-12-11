@@ -28,38 +28,38 @@ struct attributes {
 //				-1.0 }, { 1.0, 1.0, 1.0 } } };
 
 //, , , ,
-struct attributes cube[] = {
-  // front
-  {{-1.0, -1.0,  1.0},{0.0, 1.0},{0.0,0.0,1.0}},
-   {{1.0, -1.0,  1.0},{1.0, 1.0},{0.0,0.0,1.0}},
-   {{1.0,  1.0,  1.0},{1.0, 0.0},{0.0,0.0,1.0}},
-  {{-1.0,  1.0,  1.0},{0.0, 0.0},{0.0,0.0,1.0}},
-  // top
-  {{-1.0,  1.0,  1.0},{0.0, 1.0},{0.0,1.0,0.0}},
-   {{1.0,  1.0,  1.0},{1.0, 1.0},{0.0,1.0,0.0}},
-   {{1.0,  1.0, -1.0},{1.0, 0.0},{0.0,1.0,0.0}},
-  {{-1.0,  1.0, -1.0},{0.0, 0.0},{0.0,1.0,0.0}},
-  // back
-   {{1.0, -1.0, -1.0},{0.0, 1.0},{0.0,0.0,-1.0}},
-  {{-1.0, -1.0, -1.0},{1.0, 1.0},{0.0,0.0,-1.0}},
-  {{-1.0,  1.0, -1.0},{1.0, 0.0},{0.0,0.0,-1.0}},
-   {{1.0,  1.0, -1.0},{0.0, 0.0},{0.0,0.0,-1.0}},
-  // bottom
-  {{-1.0, -1.0, -1.0},{0.0, 1.0},{0.0,-1.0,0.0}},
-   {{1.0, -1.0, -1.0},{1.0, 1.0},{0.0,-1.0,0.0}},
-   {{1.0, -1.0,  1.0},{1.0, 0.0},{0.0,-1.0,0.0}},
-  {{-1.0, -1.0,  1.0},{0.0, 0.0},{0.0,-1.0,0.0}},
-  // left
-  {{-1.0, -1.0, -1.0},{0.0, 1.0},{-1.0,0.0,0.0}},
-  {{-1.0, -1.0,  1.0},{1.0, 1.0},{-1.0,0.0,0.0}},
-  {{-1.0,  1.0,  1.0},{1.0, 0.0},{-1.0,0.0,0.0}},
-  {{-1.0,  1.0, -1.0},{0.0, 0.0},{-1.0,0.0,0.0}},
-  // right
-   {{1.0, -1.0,  1.0},{0.0, 1.0},{1.0,0.0,0.0}},
-   {{1.0, -1.0, -1.0},{1.0, 1.0},{1.0,0.0,0.0}},
-   {{1.0,  1.0, -1.0},{1.0, 0.0},{1.0,0.0,0.0}},
-   {{1.0,  1.0,  1.0},{0.0, 0.0},{1.0,0.0,0.0}},
-};
+//struct attributes cube[] = {
+//  // front
+//  {{-1.0, -1.0,  1.0},{0.0, 1.0},{0.0,0.0,1.0}},
+//   {{1.0, -1.0,  1.0},{1.0, 1.0},{0.0,0.0,1.0}},
+//   {{1.0,  1.0,  1.0},{1.0, 0.0},{0.0,0.0,1.0}},
+//  {{-1.0,  1.0,  1.0},{0.0, 0.0},{0.0,0.0,1.0}},
+//  // top
+//  {{-1.0,  1.0,  1.0},{0.0, 1.0},{0.0,1.0,0.0}},
+//   {{1.0,  1.0,  1.0},{1.0, 1.0},{0.0,1.0,0.0}},
+//   {{1.0,  1.0, -1.0},{1.0, 0.0},{0.0,1.0,0.0}},
+//  {{-1.0,  1.0, -1.0},{0.0, 0.0},{0.0,1.0,0.0}},
+//  // back
+//   {{1.0, -1.0, -1.0},{0.0, 1.0},{0.0,0.0,-1.0}},
+//  {{-1.0, -1.0, -1.0},{1.0, 1.0},{0.0,0.0,-1.0}},
+//  {{-1.0,  1.0, -1.0},{1.0, 0.0},{0.0,0.0,-1.0}},
+//   {{1.0,  1.0, -1.0},{0.0, 0.0},{0.0,0.0,-1.0}},
+//  // bottom
+//  {{-1.0, -1.0, -1.0},{0.0, 1.0},{0.0,-1.0,0.0}},
+//   {{1.0, -1.0, -1.0},{1.0, 1.0},{0.0,-1.0,0.0}},
+//   {{1.0, -1.0,  1.0},{1.0, 0.0},{0.0,-1.0,0.0}},
+//  {{-1.0, -1.0,  1.0},{0.0, 0.0},{0.0,-1.0,0.0}},
+//  // left
+//  {{-1.0, -1.0, -1.0},{0.0, 1.0},{-1.0,0.0,0.0}},
+//  {{-1.0, -1.0,  1.0},{1.0, 1.0},{-1.0,0.0,0.0}},
+//  {{-1.0,  1.0,  1.0},{1.0, 0.0},{-1.0,0.0,0.0}},
+//  {{-1.0,  1.0, -1.0},{0.0, 0.0},{-1.0,0.0,0.0}},
+//  // right
+//   {{1.0, -1.0,  1.0},{0.0, 1.0},{1.0,0.0,0.0}},
+//   {{1.0, -1.0, -1.0},{1.0, 1.0},{1.0,0.0,0.0}},
+//   {{1.0,  1.0, -1.0},{1.0, 0.0},{1.0,0.0,0.0}},
+//   {{1.0,  1.0,  1.0},{0.0, 0.0},{1.0,0.0,0.0}},
+//};
 
 GLuint program;
 GLuint textureId;
@@ -76,41 +76,42 @@ int init_resources(void) {
 
 CurrentPiece cp;
 cp.Set(0,0,true);
-std::vector<float> &cs;
-std::vector<unsigned short> &el;
+std::vector<float> cs;
+std::vector<unsigned short> el;
 cp.ConvertToCubes(cs,el);
 
 	glGenBuffers(1, &vbo_cube);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_cube);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(cube), cube, GL_STATIC_DRAW);
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(cube), cube, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(&cs[0]), &cs[0], GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
-	 GLushort cube_elements[] = {
-	    // front
-	     0,  1,  2,
-	     2,  3,  0,
-	    // top
-	     4,  5,  6,
-	     6,  7,  4,
-	    // back
-	     8,  9, 10,
-	    10, 11,  8,
-	    // bottom
-	    12, 13, 14,
-	    14, 15, 12,
-	    // left
-	    16, 17, 18,
-	    18, 19, 16,
-	    // right
-	    20, 21, 22,
-	    22, 23, 20,
-	  };
+//	 GLushort cube_elements[] = {
+//	    // front
+//	     0,  1,  2,
+//	     2,  3,  0,
+//	    // top
+//	     4,  5,  6,
+//	     6,  7,  4,
+//	    // back
+//	     8,  9, 10,
+//	    10, 11,  8,
+//	    // bottom
+//	    12, 13, 14,
+//	    14, 15, 12,
+//	    // left
+//	    16, 17, 18,
+//	    18, 19, 16,
+//	    // right
+//	    20, 21, 22,
+//	    22, 23, 20,
+//	  };
 
 	glGenBuffers(1, &ibo_cube_elements);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_cube_elements);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cube_elements), cube_elements,
-	GL_STATIC_DRAW);
+	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cube_elements), cube_elements,	GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(&el[0]), &el[0],		GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	if ((vs = create_shader("cube.v.glsl", GL_VERTEX_SHADER)) == 0)
@@ -136,19 +137,19 @@ cp.ConvertToCubes(cs,el);
 		return 0;
 	}
 
-	attribute_name = "v_normal";
-	attribute_normal = glGetAttribLocation(program, attribute_name);
-	if (attribute_colour == -1) {
-		fprintf(stderr, "Could not bind attribute %s\n", attribute_name);
-		return 0;
-	}
-
-	attribute_name = "texcoord";
-	attribute_texcoord = glGetAttribLocation(program, attribute_name);
-	if (attribute_texcoord == -1) {
-		fprintf(stderr, "Could not bind attribute %s\n", attribute_name);
-		return 0;
-	}
+//	attribute_name = "v_normal";
+//	attribute_normal = glGetAttribLocation(program, attribute_name);
+//	if (attribute_colour == -1) {
+//		fprintf(stderr, "Could not bind attribute %s\n", attribute_name);
+//		return 0;
+//	}
+//
+//	attribute_name = "texcoord";
+//	attribute_texcoord = glGetAttribLocation(program, attribute_name);
+//	if (attribute_texcoord == -1) {
+//		fprintf(stderr, "Could not bind attribute %s\n", attribute_name);
+//		return 0;
+//	}
 
 	const char* uniform_name;
 	uniform_name = "model";
@@ -179,21 +180,21 @@ cp.ConvertToCubes(cs,el);
 //		return 0;
 //	}
 
-	glGenTextures(1, &textureId);
-	glBindTexture(GL_TEXTURE_2D, textureId);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, // target
-	0,  // level, 0 = base, no minimap,
-	GL_RGB, // internalformat
-	res_texture.width,  // width
-	res_texture.height,  // height
-	0,  // border, always 0 in OpenGL ES
-	GL_RGB,  // format
-	GL_UNSIGNED_BYTE, // type
-	res_texture.pixel_data);
+//	glGenTextures(1, &textureId);
+//	glBindTexture(GL_TEXTURE_2D, textureId);
+//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//	glTexImage2D(GL_TEXTURE_2D, // target
+//	0,  // level, 0 = base, no minimap,
+//	GL_RGB, // internalformat
+//	res_texture.width,  // width
+//	res_texture.height,  // height
+//	0,  // border, always 0 in OpenGL ES
+//	GL_RGB,  // format
+//	GL_UNSIGNED_BYTE, // type
+//	res_texture.pixel_data);
 
-	uniform_name = "mytexture";
-	uniform_mytexture = glGetUniformLocation(program, "uniform_name");
+//	uniform_name = "mytexture";
+//	uniform_mytexture = glGetUniformLocation(program, "uniform_name");
 
 
 	return 1;
@@ -278,15 +279,15 @@ void onDisplay() {
 	sizeof(struct attributes),  // stride
 	0);  // offset
 
-	glVertexAttribPointer(attribute_texcoord, 2,
-	GL_FLOAT,
-	GL_FALSE, sizeof(struct attributes),  // stride
-	(GLvoid*) offsetof(struct attributes, texture));
-
-	glVertexAttribPointer(attribute_normal, 3,
-	GL_FLOAT,
-	GL_FALSE, sizeof(struct attributes),  // stride
-	(GLvoid*) offsetof(struct attributes, normal));
+//	glVertexAttribPointer(attribute_texcoord, 2,
+//	GL_FLOAT,
+//	GL_FALSE, sizeof(struct attributes),  // stride
+//	(GLvoid*) offsetof(struct attributes, texture));
+//
+//	glVertexAttribPointer(attribute_normal, 3,
+//	GL_FLOAT,
+//	GL_FALSE, sizeof(struct attributes),  // stride
+//	(GLvoid*) offsetof(struct attributes, normal));
 
 //	glEnableVertexAttribArray(attribute_texcoord);
 //	glBindBuffer(GL_ARRAY_BUFFER, vbo_cube_texcoords);
@@ -298,16 +299,15 @@ void onDisplay() {
 //	0                   // offset of first element
 //	);
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, textureId);
-	glUniform1i(uniform_mytexture, /*GL_TEXTURE*/0);
+//	glActiveTexture(GL_TEXTURE0);
+//	glBindTexture(GL_TEXTURE_2D, textureId);
+//	glUniform1i(uniform_mytexture, /*GL_TEXTURE*/0);
 
 	/* Push each element in buffer_vertices to the vertex shader */
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_cube_elements);
 	int size;
 	glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
 	glDrawElements(GL_TRIANGLES, size / sizeof(GLushort), GL_UNSIGNED_SHORT, 0);
-	//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
 
 	glDisableVertexAttribArray(attribute_coord3d);
 	glDisableVertexAttribArray(attribute_colour);

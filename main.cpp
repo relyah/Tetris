@@ -83,7 +83,7 @@ cp.ConvertToCubes(cs,el);
 	glGenBuffers(1, &vbo_cube);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_cube);
 	//glBufferData(GL_ARRAY_BUFFER, sizeof(cube), cube, GL_STATIC_DRAW);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(&cs[0]), &cs[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, cs.size(), &cs[0], GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
@@ -111,7 +111,7 @@ cp.ConvertToCubes(cs,el);
 	glGenBuffers(1, &ibo_cube_elements);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_cube_elements);
 	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cube_elements), cube_elements,	GL_STATIC_DRAW);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(&el[0]), &el[0],		GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, el.size(), &el[0],		GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	if ((vs = create_shader("cube.v.glsl", GL_VERTEX_SHADER)) == 0)
@@ -355,9 +355,8 @@ int main(int argc, char* argv[]) {
 
 	glutInitDisplayMode(GLUT_RGBA | GLUT_ALPHA | GLUT_DOUBLE | GLUT_DEPTH);
 
-
 	glutInitWindowSize(640, 480);
-	glutCreateWindow("Lighting Demo");
+	glutCreateWindow("Tetris");
 
 	/* Extension wrangler initialising */
 	GLenum glew_status = glewInit();

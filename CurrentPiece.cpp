@@ -37,6 +37,7 @@ void CurrentPiece::ConvertToCubes(std::vector<float> &cs, std::vector<unsigned s
 
 	int numElements = 24;
 	int cubeNum = 0;
+	double half = sideLength/2.0;
 
 	int x = 0;
 	for (PieceArray::iterator c = piece.begin(); c != piece.end(); ++c) {
@@ -47,10 +48,10 @@ void CurrentPiece::ConvertToCubes(std::vector<float> &cs, std::vector<unsigned s
 			if (!(*r))
 				continue;
 
-			PC f_tl = { (double) (left * sideLength + x * sideLength), (double) (top * sideLength + y * sideLength), 1.0 };
-			PC f_tr = { f_tl.x + sideLength, f_tl.y, 1.0 };
-			PC f_bl = { f_tl.x, f_tl.y - sideLength, 1.0 };
-			PC f_br = { f_tr.x, f_bl.y, 1.0 };
+			PC f_bl = { (double) (left * sideLength -half + x * half), (double) (top * sideLength -half + y * half), 1.0 };
+			PC f_br = { f_bl.x + sideLength, f_bl.y, 1.0 };
+			PC f_tl = { f_bl.x, f_bl.y + sideLength, 1.0 };
+			PC f_tr = { f_br.x, f_tl.y, 1.0 };
 			PC b_tl = { f_tl.x, f_tl.y, -1.0 };
 			PC b_tr = { f_tr.x, f_tr.y, -1.0 };
 			PC b_bl = { f_bl.x, f_bl.y, -1.0 };

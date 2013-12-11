@@ -28,6 +28,7 @@ struct attributes {
 //				-1.0 }, { 1.0, 1.0, 1.0 } } };
 
 //, , , ,
+GLfloat cube[] = {-1.0,-1.0,1.0, 1.0, -1.0, 1.0, 1.0,1.0,1.0};
 //struct attributes cube[] = {
 //  // front
 //  {{-1.0, -1.0,  1.0},{0.0, 1.0},{0.0,0.0,1.0}},
@@ -76,6 +77,7 @@ int init_resources(void) {
 
 CurrentPiece cp;
 cp.Set(0,0,true);
+cp.Set(1,0,true);
 std::vector<float> cs;
 std::vector<unsigned short> el;
 cp.ConvertToCubes(cs,el);
@@ -83,9 +85,13 @@ cp.ConvertToCubes(cs,el);
 	glGenBuffers(1, &vbo_cube);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_cube);
 	//glBufferData(GL_ARRAY_BUFFER, sizeof(cube), cube, GL_STATIC_DRAW);
-	glBufferData(GL_ARRAY_BUFFER, cs.size(), &cs[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, cs.size()*sizeof(float), &cs[0], GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+
+		 GLushort cube_elements[] = {
+		    // front
+		     0,  1,  2};
 
 //	 GLushort cube_elements[] = {
 //	    // front
@@ -111,7 +117,8 @@ cp.ConvertToCubes(cs,el);
 	glGenBuffers(1, &ibo_cube_elements);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_cube_elements);
 	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cube_elements), cube_elements,	GL_STATIC_DRAW);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, el.size(), &el[0],		GL_STATIC_DRAW);
+	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cube_elements), cube_elements,	GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, el.size()*sizeof(unsigned short), &el[0],		GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	if ((vs = create_shader("cube.v.glsl", GL_VERTEX_SHADER)) == 0)
@@ -276,7 +283,7 @@ void onDisplay() {
 	glVertexAttribPointer(attribute_coord3d, 3,
 	GL_FLOAT,
 	GL_FALSE,
-	sizeof(struct attributes),  // stride
+	sizeof(struct PC),  // stride
 	0);  // offset
 
 //	glVertexAttribPointer(attribute_texcoord, 2,

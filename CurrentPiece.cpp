@@ -37,7 +37,8 @@ void CurrentPiece::ConvertToCubes(std::vector<float> &cs, std::vector<unsigned s
 
 	int numElements = 24;
 	int cubeNum = 0;
-	double half = sideLength / 2.0;
+	float half = sideLength / 2.0;
+	float margin = 0.0;
 
 	int x = 0;
 	for (PieceArray::iterator c = piece.begin(); c != piece.end(); ++c) {
@@ -48,9 +49,9 @@ void CurrentPiece::ConvertToCubes(std::vector<float> &cs, std::vector<unsigned s
 			if (!(*r))
 				continue;
 
-			PC f_bl = { (double) (left * sideLength - half + x * half), (double) (top * sideLength - half + y * half), 1.0 };
-			PC f_br = { f_bl.x + sideLength, f_bl.y, 1.0 };
-			PC f_tl = { f_bl.x, f_bl.y + sideLength, 1.0 };
+			PC f_bl = { (float) (left * sideLength - half + x * half + margin), (float) (top * sideLength - half + y * half+margin), 1.0 };
+			PC f_br = { f_bl.x + sideLength - 2*margin, f_bl.y, 1.0 };
+			PC f_tl = { f_bl.x, f_bl.y + sideLength - 2*margin, 1.0 };
 			PC f_tr = { f_br.x, f_tl.y, 1.0 };
 			PC b_tl = { f_tl.x, f_tl.y, -1.0 };
 			PC b_tr = { f_tr.x, f_tr.y, -1.0 };
@@ -122,40 +123,40 @@ void CurrentPiece::MakeElements(std::vector<unsigned short> &el, int numElements
 	el.push_back(3 + offset);
 	el.push_back(0 + offset);
 	//top
-//	el.push_back(4 + offset);
-//	el.push_back(5 + offset);
-//	el.push_back(6 + offset);
-//	el.push_back(6 + offset);
-//	el.push_back(7 + offset);
-//	el.push_back(4 + offset);
-//	//back
-//	el.push_back(8 + offset);
-//	el.push_back(9 + offset);
-//	el.push_back(10 + offset);
-//	el.push_back(10 + offset);
-//	el.push_back(11 + offset);
-//	el.push_back(8 + offset);
-//	//bottom
-//	el.push_back(12 + offset);
-//	el.push_back(13 + offset);
-//	el.push_back(14 + offset);
-//	el.push_back(14 + offset);
-//	el.push_back(15 + offset);
-//	el.push_back(12 + offset);
-//	//left
-//	el.push_back(16 + offset);
-//	el.push_back(17 + offset);
-//	el.push_back(18 + offset);
-//	el.push_back(18 + offset);
-//	el.push_back(19 + offset);
-//	el.push_back(16 + offset);
-//	//right
-//	el.push_back(20 + offset);
-//	el.push_back(21 + offset);
-//	el.push_back(22 + offset);
-//	el.push_back(22 + offset);
-//	el.push_back(23 + offset);
-//	el.push_back(20 + offset);
+	el.push_back(4 + offset);
+	el.push_back(5 + offset);
+	el.push_back(6 + offset);
+	el.push_back(6 + offset);
+	el.push_back(7 + offset);
+	el.push_back(4 + offset);
+	//back
+	el.push_back(8 + offset);
+	el.push_back(9 + offset);
+	el.push_back(10 + offset);
+	el.push_back(10 + offset);
+	el.push_back(11 + offset);
+	el.push_back(8 + offset);
+	//bottom
+	el.push_back(12 + offset);
+	el.push_back(13 + offset);
+	el.push_back(14 + offset);
+	el.push_back(14 + offset);
+	el.push_back(15 + offset);
+	el.push_back(12 + offset);
+	//left
+	el.push_back(16 + offset);
+	el.push_back(17 + offset);
+	el.push_back(18 + offset);
+	el.push_back(18 + offset);
+	el.push_back(19 + offset);
+	el.push_back(16 + offset);
+	//right
+	el.push_back(20 + offset);
+	el.push_back(21 + offset);
+	el.push_back(22 + offset);
+	el.push_back(22 + offset);
+	el.push_back(23 + offset);
+	el.push_back(20 + offset);
 
 }
 

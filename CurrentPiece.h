@@ -20,9 +20,9 @@ typedef std::array<PieceRowArray, MAXCOL> PieceArray;
 
 
 struct PC {
-	double x;
-	double y;
-	double z;
+	float x;
+	float y;
+	float z;
 };
 
 class CurrentPiece {

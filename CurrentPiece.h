@@ -12,20 +12,35 @@
 #include <array>
 #include <vector>
 
-typedef std::array<bool, 5> PieceRowArray;
-typedef std::array<PieceRowArray, 5> PieceArray;
+#define MAXROW 5
+#define MAXCOL 5
+
+typedef std::array<bool, MAXROW> PieceRowArray;
+typedef std::array<PieceRowArray, MAXCOL> PieceArray;
+
+
+struct PC {
+	double x;
+	double y;
+	double z;
+};
 
 class CurrentPiece {
 	int left;
 	int top;
 	int sideLength;
-	std::vector<int> x;
 	PieceArray  piece;
 public:
 	CurrentPiece();
 	virtual ~CurrentPiece();
 
-	void ConvertToCubes();
+	void Set(int column, int row, bool flag);
+
+	void ConvertToCubes(std::vector<float> &cs, std::vector<unsigned short> &el);
+
+private:
+	void PushIntoVector(std::vector<float> &vector, PC &pc);
+	void MakeElements(std::vector<unsigned short> &el, int numElements, int cubeNum);
 };
 
 #endif /* CURRENTPIECE_H_ */

@@ -9,7 +9,6 @@
 
 Well::Well()
 {
-	well = new int[10][80];
 }
 
 

@@ -6,9 +6,10 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "shader_utils.h"
 
+#include "shader_utils.h"
 #include "resTexture.cpp"
+#include "CurrentPiece.h"
 
 struct attributes {
 	GLfloat coord3d[3];
@@ -72,6 +73,12 @@ int screen_width;
 int screen_height;
 
 int init_resources(void) {
+
+CurrentPiece cp;
+cp.Set(0,0,true);
+std::vector<float> &cs;
+std::vector<unsigned short> &el;
+cp.ConvertToCubes(cs,el);
 
 	glGenBuffers(1, &vbo_cube);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_cube);

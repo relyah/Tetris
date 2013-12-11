@@ -10,7 +10,6 @@
 
 class Well
 {
-	int well[][];
 
 public:
 	Well();

@@ -1,1 +1,0 @@
-resTexture.d: ../resTexture.cpp

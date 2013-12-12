@@ -7,17 +7,30 @@
 
 #include "CurrentPiece.h"
 
-CurrentPiece::CurrentPiece() {
+CurrentPiece::CurrentPiece(int col, int row) {
+	this->row = row;
+	this->col = col;
 	top = 0;
 	left = 0;
 	sideLength = 2;
 
-	//reset all pieces
-	for (PieceArray::iterator c = piece.begin(); c != piece.end(); ++c) {
-		for (PieceRowArray::iterator r = (*c).begin(); r != (*c).end(); ++r) {
-			*r = false;
+	piece = PieceArray(col);
+
+	for (int c=0; c<col; c++)
+	{
+		piece[c] = PieceRowArray(row);
+		for (int r=0; r<row; r++)
+		{
+			piece[c][r] = false;
 		}
 	}
+
+	//reset all pieces
+//	for (PieceArray::iterator c = piece.begin(); c != piece.end(); ++c) {
+//		for (PieceRowArray::iterator r = (*c).begin(); r != (*c).end(); ++r) {
+//			*r = false;
+//		}
+//	}
 }
 
 CurrentPiece::~CurrentPiece() {
@@ -25,9 +38,9 @@ CurrentPiece::~CurrentPiece() {
 }
 
 void CurrentPiece::Set(int col, int row, bool flag) {
-	if (col < 0 || col >= MAXCOL)
+	if (col < 0 || col >= this->col)
 		return;
-	if (row < 0 || row >= MAXROW)
+	if (row < 0 || row >= this->row)
 		return;
 
 	piece[col][row] = flag;
@@ -38,8 +51,8 @@ void CurrentPiece::ConvertToCubes(std::vector<float> &cs, std::vector<unsigned s
 	int numElements = 24;
 	int cubeNum = 0;
 	float half = sideLength / 2.0;
-	float margin = 0.0;
 
+	float margin = 0.0;
 	int x = 0;
 	for (PieceArray::iterator c = piece.begin(); c != piece.end(); ++c) {
 
@@ -103,6 +116,20 @@ void CurrentPiece::ConvertToCubes(std::vector<float> &cs, std::vector<unsigned s
 
 	}
 
+}
+
+void CurrentPiece::Add(CurrentPiece other)
+{
+	for (int c=0; c<other.col; c++)
+		{
+
+			for (int r=0; r<other.row; r++)
+			{
+				if (!other.piece[c][r]) continue;
+
+				this->piece[other.left+c][other.top+r] = true;
+			}
+		}
 }
 
 void CurrentPiece::PushIntoVector(std::vector<float> &cs, PC &pc) {

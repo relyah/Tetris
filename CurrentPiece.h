@@ -9,14 +9,11 @@
 #define CURRENTPIECE_H_
 
 #include <stdlib.h>
-#include <array>
 #include <vector>
 
-#define MAXROW 5
-#define MAXCOL 5
 
-typedef std::array<bool, MAXROW> PieceRowArray;
-typedef std::array<PieceRowArray, MAXCOL> PieceArray;
+typedef std::vector<bool> PieceRowArray;
+typedef std::vector<PieceRowArray> PieceArray;
 
 
 struct PC {
@@ -26,17 +23,20 @@ struct PC {
 };
 
 class CurrentPiece {
+	int row, col;
 	int left;
 	int top;
 	int sideLength;
 	PieceArray  piece;
 public:
-	CurrentPiece();
+	CurrentPiece(int col, int row);
 	virtual ~CurrentPiece();
 
 	void Set(int column, int row, bool flag);
 
 	void ConvertToCubes(std::vector<float> &cs, std::vector<unsigned short> &el);
+
+	void Add(CurrentPiece other);
 
 private:
 	void PushIntoVector(std::vector<float> &vector, PC &pc);

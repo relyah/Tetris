@@ -28,7 +28,10 @@ struct attributes {
 //				-1.0 }, { 1.0, 1.0, 1.0 } } };
 
 //, , , ,
-GLfloat cube[] = {-1.0,-1.0,1.0, 1.0, -1.0, 1.0, 1.0,1.0,1.0};
+GLushort cube_elements[] = {
+// front
+		0, 1, 2 };
+GLfloat cube[] = { -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0 };
 //struct attributes cube[] = {
 //  // front
 //  {{-1.0, -1.0,  1.0},{0.0, 1.0},{0.0,0.0,1.0}},
@@ -65,33 +68,34 @@ GLfloat cube[] = {-1.0,-1.0,1.0, 1.0, -1.0, 1.0, 1.0,1.0,1.0};
 GLuint program;
 GLuint textureId;
 GLint uniformMytexture;
+bool wellEmpty = true;
 GLuint vs, fs;
-GLuint vbo_cube;//, vbo_cube_texcoords; //vertex buffer object
-GLuint ibo_cube_elements; //index buffer object
+GLuint vbo_cube, vbo_fixed; //, vbo_cube_texcoords; //vertex buffer object
+GLuint ibo_cube_elements, ibo_fixed; //index buffer object
 GLint attribute_coord3d, attribute_colour, attribute_normal, attribute_texcoord;
 GLint uniform_mvp, uniform_m, uniform_v, uniform_p, uniform_mytexture;
 int screen_width;
 int screen_height;
+CurrentPiece cp = CurrentPiece(5, 5);
+CurrentPiece well = CurrentPiece(10, 80);
 
 int init_resources(void) {
 
-CurrentPiece cp;
-cp.Set(0,0,true);
-cp.Set(1,0,true);
-std::vector<float> cs;
-std::vector<unsigned short> el;
-cp.ConvertToCubes(cs,el);
+	cp.Set(0, 0, true);
+	cp.Set(1, 0, true);
+	std::vector<float> cs;
+	std::vector<unsigned short> el;
+	cp.ConvertToCubes(cs, el);
 
 	glGenBuffers(1, &vbo_cube);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_cube);
 	//glBufferData(GL_ARRAY_BUFFER, sizeof(cube), cube, GL_STATIC_DRAW);
-	glBufferData(GL_ARRAY_BUFFER, cs.size()*sizeof(float), &cs[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, cs.size() * sizeof(float), &cs[0], GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-
-		 GLushort cube_elements[] = {
-		    // front
-		     0,  1,  2};
+	GLushort cube_elements[] = {
+	// front
+			0, 1, 2 };
 
 //	 GLushort cube_elements[] = {
 //	    // front
@@ -117,8 +121,7 @@ cp.ConvertToCubes(cs,el);
 	glGenBuffers(1, &ibo_cube_elements);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_cube_elements);
 	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cube_elements), cube_elements,	GL_STATIC_DRAW);
-	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cube_elements), cube_elements,	GL_STATIC_DRAW);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, el.size()*sizeof(unsigned short), &el[0],		GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, el.size() * sizeof(unsigned short), &el[0], GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	if ((vs = create_shader("cube.v.glsl", GL_VERTEX_SHADER)) == 0)
@@ -203,37 +206,79 @@ cp.ConvertToCubes(cs,el);
 //	uniform_name = "mytexture";
 //	uniform_mytexture = glGetUniformLocation(program, "uniform_name");
 
-
 	return 1;
 }
 
-float yinc=0.0;
+float yinc = 0.0;
+glm::mat4 translate;
+glm::mat4 translate_fixed;
 
-void timerCallBack(int value)
-{
+void timerCallBack(int value) {
 
-	glm::mat4 translate = glm::translate(glm::mat4(1.0f),glm::vec3(0.0,10.0+yinc,0.0));
-	if (yinc>-20.0)
-	{
-	yinc -= 0.2;
+translate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 10.0 + yinc, 0.0));
+	if (yinc > -20.0) {
+		yinc -= 0.2;
+	} else {
+		translate_fixed = glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 10.0 + yinc, 0.0));
+		yinc = 0.0;
+		well.Add(cp);
+		if (!wellEmpty) {
+			glDeleteBuffers(1, &vbo_fixed);
+			glDeleteBuffers(1, &ibo_fixed);
+			glDeleteBuffers(1, &vbo_cube);
+			glDeleteBuffers(1, &ibo_cube_elements);
+		}
+		wellEmpty = false;
+		std::vector<float> cs1;
+		std::vector<unsigned short> el1;
+		well.ConvertToCubes(cs1, el1);
+
+		glGenBuffers(1, &vbo_fixed);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_fixed);
+		glBufferData(GL_ARRAY_BUFFER, cs1.size() * sizeof(float), &cs1[0], GL_STATIC_DRAW);
+		//glBufferData(GL_ARRAY_BUFFER, sizeof(cube), cube, GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		glGenBuffers(1, &ibo_fixed);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_fixed);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, el1.size() * sizeof(unsigned short), &el1[0], GL_STATIC_DRAW);
+		//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cube_elements), cube_elements, GL_STATIC_DRAW);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+		cp = CurrentPiece(5, 5);
+		cp.Set(0, 0, true);
+		cp.Set(0, 1, true);
+		std::vector<float> cs2;
+		std::vector<unsigned short> el2;
+		cp.ConvertToCubes(cs2, el2);
+
+		glGenBuffers(1, &vbo_cube);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_cube);
+		glBufferData(GL_ARRAY_BUFFER, cs2.size() * sizeof(float), &cs2[0], GL_STATIC_DRAW);
+		//glBufferData(GL_ARRAY_BUFFER, sizeof(cube), cube, GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		glGenBuffers(1, &ibo_cube_elements);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_cube_elements);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, el2.size() * sizeof(unsigned short), &el2[0], GL_STATIC_DRAW);
+		//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cube_elements), cube_elements, GL_STATIC_DRAW);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 
-	glm::mat4 model =translate;//glm::mat4(1.0f);//*anim;// glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 0.0, -4.0));// * anim;//
-	glm::mat4 view =
-			glm::lookAt(glm::vec3(0.0, 0.0, -40.0),  // the position of your camera, in world space
-	 			glm::vec3(0.0, 0.0, 0.0), // where you want to look at, in world space
-					glm::vec3(0.0, 1.0, 0.0)); //up direction; probably glm::vec3(0,1,0), but (0,-1,0) would make you looking upside-down, which can be great too
+	glm::mat4 model = translate; //glm::mat4(1.0f);//*anim;// glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 0.0, -4.0));// * anim;//
+	glm::mat4 view = glm::lookAt(glm::vec3(0.0, 0.0, -40.0),  // the position of your camera, in world space
+	glm::vec3(0.0, 0.0, 0.0), // where you want to look at, in world space
+	glm::vec3(0.0, 1.0, 0.0)); //up direction; probably glm::vec3(0,1,0), but (0,-1,0) would make you looking upside-down, which can be great too
 
-	glm::mat4 projection = glm::perspective(45.0f, 1.0f * screen_width
-			/ screen_height, 0.1f, 100.0f);
+	glm::mat4 projection = glm::perspective(45.0f, 1.0f * screen_width / screen_height, 0.1f, 100.0f);
 	//glm::mat4 mvp = projection * view * model;// * anim;
 	glUseProgram(program);
 	//glUniformMatrix4fv(uniform_mvp, 1, GL_FALSE, glm::value_ptr(mvp));
-	glUniformMatrix4fv(uniform_m, 1, GL_FALSE, glm::value_ptr(model));
+//	glUniformMatrix4fv(uniform_m, 1, GL_FALSE, glm::value_ptr(model));
 	glUniformMatrix4fv(uniform_v, 1, GL_FALSE, glm::value_ptr(view));
 	glUniformMatrix4fv(uniform_p, 1, GL_FALSE, glm::value_ptr(projection));
 	glutPostRedisplay();
-	glutTimerFunc(100,timerCallBack,0);
+	glutTimerFunc(100, timerCallBack, 0);
 }
 
 void onIdle() {
@@ -278,12 +323,30 @@ void onDisplay() {
 	glEnableVertexAttribArray(attribute_coord3d);
 	glEnableVertexAttribArray(attribute_texcoord);
 	glEnableVertexAttribArray(attribute_normal);
+
+	if (!wellEmpty) {
+		glUniformMatrix4fv(uniform_m, 1, GL_FALSE, glm::value_ptr(translate_fixed));
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_fixed);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_fixed);
+
+		glVertexAttribPointer(attribute_coord3d, 3,
+		GL_FLOAT,
+		GL_FALSE, sizeof(struct PC),  // stride
+		0);  // offset
+		int size = 0;
+		glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
+		glDrawElements(GL_TRIANGLES, size / sizeof(GLushort), GL_UNSIGNED_SHORT, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
+
+	glUniformMatrix4fv(uniform_m, 1, GL_FALSE, glm::value_ptr(translate));
+
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_cube);
 
 	glVertexAttribPointer(attribute_coord3d, 3,
 	GL_FLOAT,
-	GL_FALSE,
-	sizeof(struct PC),  // stride
+	GL_FALSE, sizeof(struct PC),  // stride
 	0);  // offset
 
 //	glVertexAttribPointer(attribute_texcoord, 2,
@@ -312,18 +375,17 @@ void onDisplay() {
 
 	/* Push each element in buffer_vertices to the vertex shader */
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_cube_elements);
-	int size;
+	int size = 0;
 	glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
 	glDrawElements(GL_TRIANGLES, size / sizeof(GLushort), GL_UNSIGNED_SHORT, 0);
-
-	glDisableVertexAttribArray(attribute_coord3d);
-	glDisableVertexAttribArray(attribute_colour);
-
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	/* Display the result */
 	glutSwapBuffers();
+
+	glDisableVertexAttribArray(attribute_coord3d);
+	glDisableVertexAttribArray(attribute_colour);
 }
 
 void free_resources() {
@@ -339,6 +401,11 @@ void free_resources() {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glDeleteBuffers(1, &vbo_cube);
 	glDeleteBuffers(1, &ibo_cube_elements);
+
+	if (vbo_fixed != 0) {
+		glDeleteBuffers(1, &vbo_fixed);
+		glDeleteBuffers(1, &ibo_fixed);
+	}
 
 	glDeleteTextures(1, &textureId);
 }
@@ -381,7 +448,7 @@ int main(int argc, char* argv[]) {
 		glutIdleFunc(onIdle);
 		glEnable(GL_BLEND);
 		glEnable(GL_DEPTH_TEST);
-		glutTimerFunc(0,timerCallBack,0);
+		glutTimerFunc(0, timerCallBack, 0);
 		//glDepthFunc(GL_LESS);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glutMainLoop();

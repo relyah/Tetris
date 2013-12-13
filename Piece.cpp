@@ -5,22 +5,28 @@
  *      Author: bert
  */
 
-#include "CurrentPiece.h"
+#include "Piece.h"
 
-CurrentPiece::CurrentPiece(int col, int row) {
-	this->row = row;
-	this->col = col;
+Piece::Piece(int maxCol, int maxRow, float x, float y, float z) {
+	incX = 0.0;
+	incY = -0.2;
+	incZ = 0.0;
+
+	this->x = x;
+	this->y = y;
+	this->z = z;
+
+	this->maxRow = maxRow;
+	this->maxCol = maxCol;
 	top = 0;
 	left = 0;
 	sideLength = 2;
 
-	piece = PieceArray(col);
+	piece = PieceArray(maxCol);
 
-	for (int c=0; c<col; c++)
-	{
-		piece[c] = PieceRowArray(row);
-		for (int r=0; r<row; r++)
-		{
+	for (int c = 0; c < maxCol; c++) {
+		piece[c] = PieceRowArray(maxRow);
+		for (int r = 0; r < maxRow; r++) {
 			piece[c][r] = false;
 		}
 	}
@@ -33,20 +39,20 @@ CurrentPiece::CurrentPiece(int col, int row) {
 //	}
 }
 
-CurrentPiece::~CurrentPiece() {
+Piece::~Piece() {
 
 }
 
-void CurrentPiece::Set(int col, int row, bool flag) {
-	if (col < 0 || col >= this->col)
+void Piece::Set(int col, int row, bool flag) {
+	if (col < 0 || col >= this->maxCol)
 		return;
-	if (row < 0 || row >= this->row)
+	if (row < 0 || row >= this->maxRow)
 		return;
 
 	piece[col][row] = flag;
 }
 
-void CurrentPiece::ConvertToCubes(std::vector<float> &cs, std::vector<unsigned short> &el) {
+void Piece::ConvertToCubes(std::vector<float> &cs, std::vector<unsigned short> &el) {
 
 	int numElements = 24;
 	int cubeNum = 0;
@@ -62,9 +68,10 @@ void CurrentPiece::ConvertToCubes(std::vector<float> &cs, std::vector<unsigned s
 			if (!(*r))
 				continue;
 
-			PC f_bl = { (float) (left * sideLength - half + x * half + margin), (float) (top * sideLength - half + y * half+margin), 1.0 };
-			PC f_br = { f_bl.x + sideLength - 2*margin, f_bl.y, 1.0 };
-			PC f_tl = { f_bl.x, f_bl.y + sideLength - 2*margin, 1.0 };
+			PC f_bl = { (float) (left * sideLength - half + x * half + margin), (float) (top * sideLength - half + y * half
+					+ margin), 1.0 };
+			PC f_br = { f_bl.x + sideLength - 2 * margin, f_bl.y, 1.0 };
+			PC f_tl = { f_bl.x, f_bl.y + sideLength - 2 * margin, 1.0 };
 			PC f_tr = { f_br.x, f_tl.y, 1.0 };
 			PC b_tl = { f_tl.x, f_tl.y, -1.0 };
 			PC b_tr = { f_tr.x, f_tr.y, -1.0 };
@@ -72,19 +79,19 @@ void CurrentPiece::ConvertToCubes(std::vector<float> &cs, std::vector<unsigned s
 			PC b_br = { f_tr.x, f_bl.y, -1.0 };
 
 			//front
-			PushIntoVector(cs, f_bl); // cs.push_back(f_bl.x); 	cs.push_back(f_bl.y); 	cs.push_back(f_bl.z);
-			PushIntoVector(cs, f_br); // cs.push_back(f_br.x); 	cs.push_back(f_br.y); 	cs.push_back(f_br.z);
-			PushIntoVector(cs, f_tr); //cs.push_back(f_tr.x); 	cs.push_back(f_tr.y); 	cs.push_back(f_tr.z);
-			PushIntoVector(cs, f_tl); //cs.push_back(f_tl.x); 	cs.push_back(f_tl.y); 	cs.push_back(f_tl.z);
+			PushIntoVector(cs, f_bl);
+			PushIntoVector(cs, f_br);
+			PushIntoVector(cs, f_tr);
+			PushIntoVector(cs, f_tl);
 
 			//top
-			PushIntoVector(cs, f_tl); //cs.push_back(f_tl.x); 	cs.push_back(f_tl.y); 	cs.push_back(f_tl.z);
-			PushIntoVector(cs, f_tr); //cs.push_back(f_tr.x); 	cs.push_back(f_tr.y); 	cs.push_back(f_tr.z);
-			PushIntoVector(cs, b_tr); //cs.push_back(b_tr.x); 	cs.push_back(b_tr.y); 	cs.push_back(b_tr.z);
-			PushIntoVector(cs, b_tl); //cs.push_back(b_tl.x); 	cs.push_back(b_tl.y); 	cs.push_back(b_tl.z);
+			PushIntoVector(cs, f_tl);
+			PushIntoVector(cs, f_tr);
+			PushIntoVector(cs, b_tr);
+			PushIntoVector(cs, b_tl);
 
 			//back
-			PushIntoVector(cs, b_br); //cs.push_back(b_br.x); 	cs.push_back(b_br.y); 	cs.push_back(b_br.z);
+			PushIntoVector(cs, b_br);
 			PushIntoVector(cs, b_bl);
 			PushIntoVector(cs, b_tl);
 			PushIntoVector(cs, b_tr);
@@ -118,28 +125,70 @@ void CurrentPiece::ConvertToCubes(std::vector<float> &cs, std::vector<unsigned s
 
 }
 
-void CurrentPiece::Add(CurrentPiece other)
-{
-	for (int c=0; c<other.col; c++)
-		{
+void Piece::Add(Piece other) {
+	for (int c = 0; c < other.maxCol; c++) {
 
-			for (int r=0; r<other.row; r++)
-			{
-				if (!other.piece[c][r]) continue;
+		for (int r = 0; r < other.maxRow; r++) {
+			if (!other.piece[c][r])
+				continue;
 
-				this->piece[other.left+c][other.top+r] = true;
-			}
+			this->piece[other.left + c][other.top + r] = true;
 		}
+	}
 }
 
-void CurrentPiece::PushIntoVector(std::vector<float> &cs, PC &pc) {
+void Piece::Increment(bool isIncX, bool isIncY, bool isIncZ) {
+	x += (isIncX ? incX : 0.0);
+	y += (isIncY ? incY : 0.0);
+	z += (isIncZ ? incZ : 0.0);
+}
+
+bool Piece::CanMove(Piece other) {
+
+	int otherMaxRow = other.maxRow - 1;
+	int otherMaxRowInWell = other.GetBottomRow() + other.top;
+	if (otherMaxRowInWell > this->maxRow)
+		return false;
+
+	for (int row = otherMaxRow; row >= 0; row--) {
+		for (int col = other.maxCol - 1; col >= 0; col--) {
+			if (other.piece[col][row]) {
+				if (this->piece[col + other.left][row + other.top])
+					return false;
+			}
+		}
+	}
+	return true;
+}
+
+bool Piece::MustMove(Piece other) {
+	float upperBound = -(float) (other.top * other.sideLength);
+
+	return other.y <= upperBound;
+}
+
+void Piece::Move(int incCol, int incRow) {
+	top += incRow;
+	left += incCol;
+}
+
+int Piece::GetBottomRow() {
+	for (int row = maxRow; row >= 0; row--) {
+		for (int col = maxCol - 1; col >= 0; col--) {
+			if (piece[col][row])
+				return row;
+		}
+	}
+	return 0;
+}
+
+void Piece::PushIntoVector(std::vector<float> &cs, PC &pc) {
 	cs.push_back(pc.x);
 	cs.push_back(pc.y);
 	cs.push_back(pc.z);
-
 }
 
-void CurrentPiece::MakeElements(std::vector<unsigned short> &el, int numElements, int cubeNum) {
+void Piece::MakeElements(std::vector<unsigned short> &el, int numElements, int cubeNum) {
 
 	int offset = numElements * cubeNum;
 	//front

@@ -5,16 +5,14 @@
  *      Author: bert
  */
 
-#ifndef CURRENTPIECE_H_
-#define CURRENTPIECE_H_
+#ifndef PIECE_H_
+#define PIECE_H_
 
 #include <stdlib.h>
 #include <vector>
 
-
 typedef std::vector<bool> PieceRowArray;
 typedef std::vector<PieceRowArray> PieceArray;
-
 
 struct PC {
 	float x;
@@ -22,25 +20,44 @@ struct PC {
 	float z;
 };
 
-class CurrentPiece {
-	int row, col;
+class Piece {
+
+	float x, y, z;
+	float incX, incY, incZ;
+	int maxRow, maxCol;
 	int left;
 	int top;
 	int sideLength;
-	PieceArray  piece;
+	PieceArray piece;
+
 public:
-	CurrentPiece(int col, int row);
-	virtual ~CurrentPiece();
+	Piece(int maxCol, int maxRow, float x, float y, float z);
+	virtual ~Piece();
 
 	void Set(int column, int row, bool flag);
 
 	void ConvertToCubes(std::vector<float> &cs, std::vector<unsigned short> &el);
 
-	void Add(CurrentPiece other);
+	void Add(Piece other);
+	bool CanMove(Piece other);
+	bool MustMove(Piece other);
+	void Increment(bool incX, bool incY, bool incZ);
+	void Move(int incCol, int incRow);
+
+	float X() {
+		return x;
+	}
+	float Y() {
+		return y;
+	}
+	float Z() {
+		return z;
+	}
 
 private:
+	int GetBottomRow();
 	void PushIntoVector(std::vector<float> &vector, PC &pc);
 	void MakeElements(std::vector<unsigned short> &el, int numElements, int cubeNum);
 };
 
-#endif /* CURRENTPIECE_H_ */
+#endif /* PIECE_H_ */

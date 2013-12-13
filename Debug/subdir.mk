@@ -4,21 +4,21 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../CurrentPiece.cpp \
+../Piece.cpp \
 ../Well.cpp \
 ../main.cpp \
 ../resTexture.cpp \
 ../shader_utils.cpp 
 
 OBJS += \
-./CurrentPiece.o \
+./Piece.o \
 ./Well.o \
 ./main.o \
 ./resTexture.o \
 ./shader_utils.o 
 
 CPP_DEPS += \
-./CurrentPiece.d \
+./Piece.d \
 ./Well.d \
 ./main.d \
 ./resTexture.d \

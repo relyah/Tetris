@@ -9,7 +9,7 @@
 
 #include "shader_utils.h"
 #include "resTexture.cpp"
-#include "CurrentPiece.h"
+#include "Piece.h"
 
 struct attributes {
 	GLfloat coord3d[3];
@@ -76,8 +76,8 @@ GLint attribute_coord3d, attribute_colour, attribute_normal, attribute_texcoord;
 GLint uniform_mvp, uniform_m, uniform_v, uniform_p, uniform_mytexture;
 int screen_width;
 int screen_height;
-CurrentPiece cp = CurrentPiece(5, 5);
-CurrentPiece well = CurrentPiece(10, 80);
+Piece cp = Piece(5, 5, 0.0, 0.0, 0.0);
+Piece well = Piece(10, 12, 0.0, 0.0, 0.0);
 
 int init_resources(void) {
 
@@ -215,57 +215,103 @@ glm::mat4 translate_fixed;
 
 void timerCallBack(int value) {
 
-translate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 10.0 + yinc, 0.0));
-	if (yinc > -20.0) {
-		yinc -= 0.2;
-	} else {
-		translate_fixed = glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 10.0 + yinc, 0.0));
-		yinc = 0.0;
-		well.Add(cp);
-		if (!wellEmpty) {
-			glDeleteBuffers(1, &vbo_fixed);
-			glDeleteBuffers(1, &ibo_fixed);
-			glDeleteBuffers(1, &vbo_cube);
-			glDeleteBuffers(1, &ibo_cube_elements);
+	if (well.MustMove(cp)) {
+		if (well.CanMove(cp)) {
+			cp.Move(0, 1);
+		} else {
+			wellEmpty = false;
+
+
+			well.Add(cp);
+
+			std::vector<float> cs1;
+			std::vector<unsigned short> el1;
+			well.ConvertToCubes(cs1, el1);
+
+			glGenBuffers(1, &vbo_fixed);
+			glBindBuffer(GL_ARRAY_BUFFER, vbo_fixed);
+			glBufferData(GL_ARRAY_BUFFER, cs1.size() * sizeof(float), &cs1[0], GL_STATIC_DRAW);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+			glGenBuffers(1, &ibo_fixed);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_fixed);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, el1.size() * sizeof(unsigned short), &el1[0], GL_STATIC_DRAW);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+			translate_fixed = glm::translate(glm::mat4(1.0f), glm::vec3(well.X(),well.Y(),well.Z()));
+
+			cp = Piece(5, 5, 0.0, 0.0, 0.0);
+			cp.Set(0, 0, true);
+			cp.Set(0, 1, true);
+			std::vector<float> cs2;
+			std::vector<unsigned short> el2;
+			cp.ConvertToCubes(cs2, el2);
+
+			glGenBuffers(1, &vbo_cube);
+			glBindBuffer(GL_ARRAY_BUFFER, vbo_cube);
+			glBufferData(GL_ARRAY_BUFFER, cs2.size() * sizeof(float), &cs2[0], GL_STATIC_DRAW);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+			glGenBuffers(1, &ibo_cube_elements);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_cube_elements);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, el2.size() * sizeof(unsigned short), &el2[0], GL_STATIC_DRAW);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		}
-		wellEmpty = false;
-		std::vector<float> cs1;
-		std::vector<unsigned short> el1;
-		well.ConvertToCubes(cs1, el1);
-
-		glGenBuffers(1, &vbo_fixed);
-		glBindBuffer(GL_ARRAY_BUFFER, vbo_fixed);
-		glBufferData(GL_ARRAY_BUFFER, cs1.size() * sizeof(float), &cs1[0], GL_STATIC_DRAW);
-		//glBufferData(GL_ARRAY_BUFFER, sizeof(cube), cube, GL_STATIC_DRAW);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-		glGenBuffers(1, &ibo_fixed);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_fixed);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, el1.size() * sizeof(unsigned short), &el1[0], GL_STATIC_DRAW);
-		//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cube_elements), cube_elements, GL_STATIC_DRAW);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-		cp = CurrentPiece(5, 5);
-		cp.Set(0, 0, true);
-		cp.Set(0, 1, true);
-		std::vector<float> cs2;
-		std::vector<unsigned short> el2;
-		cp.ConvertToCubes(cs2, el2);
-
-		glGenBuffers(1, &vbo_cube);
-		glBindBuffer(GL_ARRAY_BUFFER, vbo_cube);
-		glBufferData(GL_ARRAY_BUFFER, cs2.size() * sizeof(float), &cs2[0], GL_STATIC_DRAW);
-		//glBufferData(GL_ARRAY_BUFFER, sizeof(cube), cube, GL_STATIC_DRAW);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-		glGenBuffers(1, &ibo_cube_elements);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_cube_elements);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, el2.size() * sizeof(unsigned short), &el2[0], GL_STATIC_DRAW);
-		//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cube_elements), cube_elements, GL_STATIC_DRAW);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	} else {
+		cp.Increment(false, true, false);
 	}
 
-	glm::mat4 model = translate; //glm::mat4(1.0f);//*anim;// glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 0.0, -4.0));// * anim;//
+	translate = glm::translate(glm::mat4(1.0f), glm::vec3(cp.X(), cp.Y(), cp.Z()));
+//	if (yinc > -20.0) {
+//		yinc -= 0.2;
+//	} else {
+//		translate_fixed = glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 10.0 + yinc, 0.0));
+//		yinc = 0.0;
+//		well.Add(cp);
+//		if (!wellEmpty) {
+//			glDeleteBuffers(1, &vbo_fixed);
+//			glDeleteBuffers(1, &ibo_fixed);
+//			glDeleteBuffers(1, &vbo_cube);
+//			glDeleteBuffers(1, &ibo_cube_elements);
+//		}
+//		wellEmpty = false;
+//		std::vector<float> cs1;
+//		std::vector<unsigned short> el1;
+//		well.ConvertToCubes(cs1, el1);
+//
+//		glGenBuffers(1, &vbo_fixed);
+//		glBindBuffer(GL_ARRAY_BUFFER, vbo_fixed);
+//		glBufferData(GL_ARRAY_BUFFER, cs1.size() * sizeof(float), &cs1[0], GL_STATIC_DRAW);
+//		//glBufferData(GL_ARRAY_BUFFER, sizeof(cube), cube, GL_STATIC_DRAW);
+//		glBindBuffer(GL_ARRAY_BUFFER, 0);
+//
+//		glGenBuffers(1, &ibo_fixed);
+//		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_fixed);
+//		glBufferData(GL_ELEMENT_ARRAY_BUFFER, el1.size() * sizeof(unsigned short), &el1[0], GL_STATIC_DRAW);
+//		//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cube_elements), cube_elements, GL_STATIC_DRAW);
+//		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+//
+//		cp = Piece(5, 5);
+//		cp.Set(0, 0, true);
+//		cp.Set(0, 1, true);
+//		std::vector<float> cs2;
+//		std::vector<unsigned short> el2;
+//		cp.ConvertToCubes(cs2, el2);
+//
+//		glGenBuffers(1, &vbo_cube);
+//		glBindBuffer(GL_ARRAY_BUFFER, vbo_cube);
+//		glBufferData(GL_ARRAY_BUFFER, cs2.size() * sizeof(float), &cs2[0], GL_STATIC_DRAW);
+//		//glBufferData(GL_ARRAY_BUFFER, sizeof(cube), cube, GL_STATIC_DRAW);
+//		glBindBuffer(GL_ARRAY_BUFFER, 0);
+//
+//		glGenBuffers(1, &ibo_cube_elements);
+//		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_cube_elements);
+//		glBufferData(GL_ELEMENT_ARRAY_BUFFER, el2.size() * sizeof(unsigned short), &el2[0], GL_STATIC_DRAW);
+//		//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cube_elements), cube_elements, GL_STATIC_DRAW);
+//		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+//	}
+
+	//glm::mat4 model = translate; //glm::mat4(1.0f);//*anim;// glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 0.0, -4.0));// * anim;//
 	glm::mat4 view = glm::lookAt(glm::vec3(0.0, 0.0, -40.0),  // the position of your camera, in world space
 	glm::vec3(0.0, 0.0, 0.0), // where you want to look at, in world space
 	glm::vec3(0.0, 1.0, 0.0)); //up direction; probably glm::vec3(0,1,0), but (0,-1,0) would make you looking upside-down, which can be great too

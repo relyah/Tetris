@@ -76,13 +76,12 @@ GLint attribute_coord3d, attribute_colour, attribute_normal, attribute_texcoord;
 GLint uniform_mvp, uniform_m, uniform_v, uniform_p, uniform_mytexture;
 int screen_width;
 int screen_height;
-Piece cp = Piece(5, 5, 0.0, 0.0, 0.0);
-Piece well = Piece(10, 12, 0.0, 0.0, 0.0);
+Piece cp = Piece(3, 3, 0.0, 0.0, 0.0);
+Piece well = Piece(10, 7, 0.0, 0.0, 0.0);
 
 int init_resources(void) {
 
 	cp.Set(0, 0, true);
-	cp.Set(1, 0, true);
 	std::vector<float> cs;
 	std::vector<unsigned short> el;
 	cp.ConvertToCubes(cs, el);
@@ -221,7 +220,6 @@ void timerCallBack(int value) {
 		} else {
 			wellEmpty = false;
 
-
 			well.Add(cp);
 
 			std::vector<float> cs1;
@@ -312,7 +310,7 @@ void timerCallBack(int value) {
 //	}
 
 	//glm::mat4 model = translate; //glm::mat4(1.0f);//*anim;// glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 0.0, -4.0));// * anim;//
-	glm::mat4 view = glm::lookAt(glm::vec3(0.0, 0.0, -40.0),  // the position of your camera, in world space
+	glm::mat4 view = glm::lookAt(glm::vec3(0.0, -20.0, -40.0),  // the position of your camera, in world space
 	glm::vec3(0.0, 0.0, 0.0), // where you want to look at, in world space
 	glm::vec3(0.0, 1.0, 0.0)); //up direction; probably glm::vec3(0,1,0), but (0,-1,0) would make you looking upside-down, which can be great too
 

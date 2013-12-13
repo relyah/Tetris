@@ -68,7 +68,7 @@ void Piece::ConvertToCubes(std::vector<float> &cs, std::vector<unsigned short> &
 			if (!(*r))
 				continue;
 
-			PC f_bl = { (float) (left * sideLength - half + x * half + margin), (float) (top * sideLength - half + y * half
+			PC f_bl = { (float) (left * sideLength - half + x * half + margin), (float) (-top * sideLength + half - y * half
 					+ margin), 1.0 };
 			PC f_br = { f_bl.x + sideLength - 2 * margin, f_bl.y, 1.0 };
 			PC f_tl = { f_bl.x, f_bl.y + sideLength - 2 * margin, 1.0 };
@@ -147,10 +147,10 @@ bool Piece::CanMove(Piece other) {
 
 	int otherMaxRow = other.maxRow - 1;
 	int otherMaxRowInWell = other.GetBottomRow() + other.top;
-	if (otherMaxRowInWell > this->maxRow)
+	if (otherMaxRowInWell >= this->maxRow-1)
 		return false;
 
-	for (int row = otherMaxRow; row >= 0; row--) {
+	for (int row = otherMaxRow-1; row >= 0; row--) {
 		for (int col = other.maxCol - 1; col >= 0; col--) {
 			if (other.piece[col][row]) {
 				if (this->piece[col + other.left][row + other.top])
@@ -173,7 +173,7 @@ void Piece::Move(int incCol, int incRow) {
 }
 
 int Piece::GetBottomRow() {
-	for (int row = maxRow; row >= 0; row--) {
+	for (int row = maxRow-1; row >= 0; row--) {
 		for (int col = maxCol - 1; col >= 0; col--) {
 			if (piece[col][row])
 				return row;

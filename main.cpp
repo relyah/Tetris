@@ -69,6 +69,7 @@ GLuint program;
 GLuint textureId;
 GLint uniformMytexture;
 bool wellEmpty = true;
+bool isGameOver = false;
 GLuint vs, fs;
 GLuint vbo_cube, vbo_fixed; //, vbo_cube_texcoords; //vertex buffer object
 GLuint ibo_cube_elements, ibo_fixed; //index buffer object
@@ -77,7 +78,10 @@ GLint uniform_mvp, uniform_m, uniform_v, uniform_p, uniform_mytexture;
 int screen_width;
 int screen_height;
 Piece cp = Piece(3, 3, 0.0, 0.0, 0.0);
-Piece well = Piece(10, 7, 0.0, 0.0, 0.0);
+Piece well = Piece(10, 14, 0.0, 0.0, 0.0);
+glm::mat4 translate;
+glm::mat4 translate_fixed;
+int specialKey = -1;
 
 int init_resources(void) {
 
@@ -208,11 +212,21 @@ int init_resources(void) {
 	return 1;
 }
 
-float yinc = 0.0;
-glm::mat4 translate;
-glm::mat4 translate_fixed;
-
 void timerCallBack(int value) {
+
+	switch (specialKey) {
+	case GLUT_KEY_LEFT:
+		if (well.CanMove(cp, 1, 0)) {
+			cp.Move(1, 0, true);
+		}
+		break;
+	case GLUT_KEY_RIGHT:
+		if (well.CanMove(cp, -1, 0)) {
+			cp.Move(-1, 0, true);
+		}
+		break;
+	}
+	specialKey=-1;
 
 	if (well.MustMove(cp)) {
 		if (well.CanMove(cp)) {
@@ -236,127 +250,52 @@ void timerCallBack(int value) {
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER, el1.size() * sizeof(unsigned short), &el1[0], GL_STATIC_DRAW);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-			translate_fixed = glm::translate(glm::mat4(1.0f), glm::vec3(well.X(),well.Y()+7.0,well.Z()));
+			translate_fixed = glm::translate(glm::mat4(1.0f), glm::vec3(well.X(), well.Y() + 14.0, well.Z()));
 
-			cp = Piece(5, 5, 0.0, 0.0, 0.0);
+			cp = Piece(3, 3, 0.0, 0.0, 0.0);
 			cp.Set(0, 0, true);
-			cp.Set(0, 1, true);
-			std::vector<float> cs2;
-			std::vector<unsigned short> el2;
-			cp.ConvertToCubes(cs2, el2);
 
-			glGenBuffers(1, &vbo_cube);
-			glBindBuffer(GL_ARRAY_BUFFER, vbo_cube);
-			glBufferData(GL_ARRAY_BUFFER, cs2.size() * sizeof(float), &cs2[0], GL_STATIC_DRAW);
-			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			if (well.CanAdd(cp)) {
+				std::vector<float> cs2;
+				std::vector<unsigned short> el2;
+				cp.ConvertToCubes(cs2, el2);
 
-			glGenBuffers(1, &ibo_cube_elements);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_cube_elements);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, el2.size() * sizeof(unsigned short), &el2[0], GL_STATIC_DRAW);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+				glGenBuffers(1, &vbo_cube);
+				glBindBuffer(GL_ARRAY_BUFFER, vbo_cube);
+				glBufferData(GL_ARRAY_BUFFER, cs2.size() * sizeof(float), &cs2[0], GL_STATIC_DRAW);
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+				glGenBuffers(1, &ibo_cube_elements);
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_cube_elements);
+				glBufferData(GL_ELEMENT_ARRAY_BUFFER, el2.size() * sizeof(unsigned short), &el2[0], GL_STATIC_DRAW);
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+			} else {
+				isGameOver = true;
+			}
 		}
 	} else {
 		cp.Increment(false, true, false);
 	}
 
-	translate = glm::translate(glm::mat4(1.0f), glm::vec3(cp.X(), cp.Y()+7.0, cp.Z()));
-//	if (yinc > -20.0) {
-//		yinc -= 0.2;
-//	} else {
-//		translate_fixed = glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 10.0 + yinc, 0.0));
-//		yinc = 0.0;
-//		well.Add(cp);
-//		if (!wellEmpty) {
-//			glDeleteBuffers(1, &vbo_fixed);
-//			glDeleteBuffers(1, &ibo_fixed);
-//			glDeleteBuffers(1, &vbo_cube);
-//			glDeleteBuffers(1, &ibo_cube_elements);
-//		}
-//		wellEmpty = false;
-//		std::vector<float> cs1;
-//		std::vector<unsigned short> el1;
-//		well.ConvertToCubes(cs1, el1);
-//
-//		glGenBuffers(1, &vbo_fixed);
-//		glBindBuffer(GL_ARRAY_BUFFER, vbo_fixed);
-//		glBufferData(GL_ARRAY_BUFFER, cs1.size() * sizeof(float), &cs1[0], GL_STATIC_DRAW);
-//		//glBufferData(GL_ARRAY_BUFFER, sizeof(cube), cube, GL_STATIC_DRAW);
-//		glBindBuffer(GL_ARRAY_BUFFER, 0);
-//
-//		glGenBuffers(1, &ibo_fixed);
-//		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_fixed);
-//		glBufferData(GL_ELEMENT_ARRAY_BUFFER, el1.size() * sizeof(unsigned short), &el1[0], GL_STATIC_DRAW);
-//		//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cube_elements), cube_elements, GL_STATIC_DRAW);
-//		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-//
-//		cp = Piece(5, 5);
-//		cp.Set(0, 0, true);
-//		cp.Set(0, 1, true);
-//		std::vector<float> cs2;
-//		std::vector<unsigned short> el2;
-//		cp.ConvertToCubes(cs2, el2);
-//
-//		glGenBuffers(1, &vbo_cube);
-//		glBindBuffer(GL_ARRAY_BUFFER, vbo_cube);
-//		glBufferData(GL_ARRAY_BUFFER, cs2.size() * sizeof(float), &cs2[0], GL_STATIC_DRAW);
-//		//glBufferData(GL_ARRAY_BUFFER, sizeof(cube), cube, GL_STATIC_DRAW);
-//		glBindBuffer(GL_ARRAY_BUFFER, 0);
-//
-//		glGenBuffers(1, &ibo_cube_elements);
-//		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_cube_elements);
-//		glBufferData(GL_ELEMENT_ARRAY_BUFFER, el2.size() * sizeof(unsigned short), &el2[0], GL_STATIC_DRAW);
-//		//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cube_elements), cube_elements, GL_STATIC_DRAW);
-//		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-//	}
+	if (!isGameOver) {
+		translate = glm::translate(glm::mat4(1.0f), glm::vec3(cp.X(), cp.Y() + 14.0, cp.Z()));
 
-	//glm::mat4 model = translate; //glm::mat4(1.0f);//*anim;// glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 0.0, -4.0));// * anim;//
-	glm::mat4 view = glm::lookAt(glm::vec3(0.0, 0.0, -40.0),  // the position of your camera, in world space
-	glm::vec3(0.0, 0.0, 0.0), // where you want to look at, in world space
-	glm::vec3(0.0, 1.0, 0.0)); //up direction; probably glm::vec3(0,1,0), but (0,-1,0) would make you looking upside-down, which can be great too
+		glm::mat4 view = glm::lookAt(glm::vec3(0.0, 0.0, -40.0),  // the position of your camera, in world space
+		glm::vec3(0.0, 0.0, 0.0), // where you want to look at, in world space
+		glm::vec3(0.0, 1.0, 0.0)); //up direction; probably glm::vec3(0,1,0), but (0,-1,0) would make you looking upside-down, which can be great too
 
-	glm::mat4 projection = glm::perspective(45.0f, 1.0f * screen_width / screen_height, 0.1f, 100.0f);
-	//glm::mat4 mvp = projection * view * model;// * anim;
-	glUseProgram(program);
-	//glUniformMatrix4fv(uniform_mvp, 1, GL_FALSE, glm::value_ptr(mvp));
+		glm::mat4 projection = glm::perspective(45.0f, 1.0f * screen_width / screen_height, 0.1f, 100.0f);
+//glm::mat4 mvp = projection * view * model;// * anim;
+		glUseProgram(program);
+//glUniformMatrix4fv(uniform_mvp, 1, GL_FALSE, glm::value_ptr(mvp));
 //	glUniformMatrix4fv(uniform_m, 1, GL_FALSE, glm::value_ptr(model));
-	glUniformMatrix4fv(uniform_v, 1, GL_FALSE, glm::value_ptr(view));
-	glUniformMatrix4fv(uniform_p, 1, GL_FALSE, glm::value_ptr(projection));
-	glutPostRedisplay();
-	glutTimerFunc(100, timerCallBack, 0);
+		glUniformMatrix4fv(uniform_v, 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(uniform_p, 1, GL_FALSE, glm::value_ptr(projection));
+		glutPostRedisplay();
+		glutTimerFunc(100, timerCallBack, 0);
+	}
 }
 
-void onIdle() {
-//	//float angle = glutGet(GLUT_ELAPSED_TIME) / 1000.0 * 45; // 45° per second
-//	float angle = glutGet(GLUT_ELAPSED_TIME) / 1000.0 * 15;  // base 15° per second
-//
-//	//glm::vec3 axis_y(0, 1, 0);
-//	//glm::mat4 anim = glm::rotate(glm::mat4(1.0f), angle, axis_y);
-//
-//
-////	  glm::mat4 anim = \
-////	    glm::rotate(glm::mat4(1.0f), angle*3.0f, glm::vec3(1, 0, 0)) *  // X axis
-////	    glm::rotate(glm::mat4(1.0f), angle*2.0f, glm::vec3(0, 1, 0)) *  // Y axis
-////	    glm::rotate(glm::mat4(1.0f), angle*4.0f, glm::vec3(0, 0, 1));   // Z axis
-//
-//	glm::mat4 translate = glm::translate(glm::mat4(1.0f),glm::vec3(0.0,10.0+yinc,0.0));
-//	yinc--;
-//
-//	glm::mat4 model =translate;//glm::mat4(1.0f);//*anim;// glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 0.0, -4.0));// * anim;//
-//	glm::mat4 view =
-//			glm::lookAt(glm::vec3(0.0, 0.0, -40.0),  // the position of your camera, in world space
-//	 			glm::vec3(0.0, 0.0, 0.0), // where you want to look at, in world space
-//					glm::vec3(0.0, 1.0, 0.0)); //up direction; probably glm::vec3(0,1,0), but (0,-1,0) would make you looking upside-down, which can be great too
-//
-//	glm::mat4 projection = glm::perspective(45.0f, 1.0f * screen_width
-//			/ screen_height, 0.1f, 100.0f);
-//	//glm::mat4 mvp = projection * view * model;// * anim;
-//	glUseProgram(program);
-//	//glUniformMatrix4fv(uniform_mvp, 1, GL_FALSE, glm::value_ptr(mvp));
-//	glUniformMatrix4fv(uniform_m, 1, GL_FALSE, glm::value_ptr(model));
-//	glUniformMatrix4fv(uniform_v, 1, GL_FALSE, glm::value_ptr(view));
-//	glUniformMatrix4fv(uniform_p, 1, GL_FALSE, glm::value_ptr(projection));
-//	glutPostRedisplay();
-}
 void onDisplay() {
 	/* Clear the background as white */
 	glClearColor(0.0, 1.0, 0.0, 1.0);
@@ -384,14 +323,15 @@ void onDisplay() {
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
-	glUniformMatrix4fv(uniform_m, 1, GL_FALSE, glm::value_ptr(translate));
+	if (!isGameOver) {
+		glUniformMatrix4fv(uniform_m, 1, GL_FALSE, glm::value_ptr(translate));
 
-	glBindBuffer(GL_ARRAY_BUFFER, vbo_cube);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_cube);
 
-	glVertexAttribPointer(attribute_coord3d, 3,
-	GL_FLOAT,
-	GL_FALSE, sizeof(struct PC),  // stride
-	0);  // offset
+		glVertexAttribPointer(attribute_coord3d, 3,
+		GL_FLOAT,
+		GL_FALSE, sizeof(struct PC),  // stride
+		0);  // offset
 
 //	glVertexAttribPointer(attribute_texcoord, 2,
 //	GL_FLOAT,
@@ -417,14 +357,14 @@ void onDisplay() {
 //	glBindTexture(GL_TEXTURE_2D, textureId);
 //	glUniform1i(uniform_mytexture, /*GL_TEXTURE*/0);
 
-	/* Push each element in buffer_vertices to the vertex shader */
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_cube_elements);
-	int size = 0;
-	glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
-	glDrawElements(GL_TRIANGLES, size / sizeof(GLushort), GL_UNSIGNED_SHORT, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
+		/* Push each element in buffer_vertices to the vertex shader */
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_cube_elements);
+		int size = 0;
+		glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
+		glDrawElements(GL_TRIANGLES, size / sizeof(GLushort), GL_UNSIGNED_SHORT, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
 	/* Display the result */
 	glutSwapBuffers();
 
@@ -460,12 +400,20 @@ void onReshape(int width, int height) {
 	glViewport(0, 0, screen_width, screen_height);
 }
 
+void keyPressed(unsigned char key, int x, int y) {
+
+}
+
+void specialKeyPressed(int key, int x, int y) {
+	specialKey = key;
+}
+
 int main(int argc, char* argv[]) {
 	/* Glut-related initialising functions */
 	glutInit(&argc, argv);
-	//glutInitContextVersion(4, 0);
-	//glutInitContextFlags(GLUT_FORWARD_COMPATIBLE);
-	//glutInitContextProfile(GLUT_CORE_PROFILE);
+//glutInitContextVersion(4, 0);
+//glutInitContextFlags(GLUT_FORWARD_COMPATIBLE);
+//glutInitContextProfile(GLUT_CORE_PROFILE);
 
 	glutSetOption(
 	GLUT_ACTION_ON_WINDOW_CLOSE,
@@ -489,7 +437,8 @@ int main(int argc, char* argv[]) {
 		/* We can display it if everything goes OK */
 		glutDisplayFunc(onDisplay);
 		glutReshapeFunc(onReshape);
-		glutIdleFunc(onIdle);
+		glutKeyboardFunc(keyPressed);
+		glutSpecialFunc(specialKeyPressed);
 		glEnable(GL_BLEND);
 		glEnable(GL_DEPTH_TEST);
 		glutTimerFunc(0, timerCallBack, 0);

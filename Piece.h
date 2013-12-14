@@ -38,11 +38,12 @@ public:
 
 	void ConvertToCubes(std::vector<float> &cs, std::vector<unsigned short> &el);
 
+	bool CanAdd(Piece other);
 	void Add(Piece other);
-	bool CanMove(Piece other);
+	bool CanMove(Piece other, int incCol=0, int incRow=1);
 	bool MustMove(Piece other);
 	void Increment(bool incX, bool incY, bool incZ);
-	void Move(int incCol, int incRow);
+	void Move(int incCol, int incRow, bool isAdjustXandY = false);
 
 	float X() {
 		return x;

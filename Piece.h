@@ -10,6 +10,7 @@
 
 #include <stdlib.h>
 #include <vector>
+#include <math.h>
 
 typedef std::vector<bool> PieceRowArray;
 typedef std::vector<PieceRowArray> PieceArray;
@@ -42,9 +43,13 @@ public:
 	void Add(Piece& other);
 	bool CanMove(Piece& other, int incCol = 0, int incRow = 1);
 	bool MustMove(Piece& other);
+	void Drop(Piece& other);
+	bool CanRotateLeft(Piece& other);
+	void RotateLeft();
+
 	void Increment(bool incX, bool incY, bool incZ);
 	void Move(int incCol, int incRow, bool isAdjustXandY = false, bool isAdjustAbsolute = false);
-	void Drop(Piece& other);
+
 
 	float X() {
 		return x;

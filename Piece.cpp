@@ -185,8 +185,8 @@ void Piece::Move(int incCol, int incRow, bool isAdjustXandY, bool isAdjustAbsolu
 
 	if (isAdjustXandY) {
 		if (isAdjustAbsolute) {
-			x = (float)(left * sideLength);
-			y = (float)(-top * sideLength);
+			x = (float) (left * sideLength);
+			y = (float) (-top * sideLength);
 		} else {
 			x += (float) (incCol * sideLength);
 			y += (float) (-incRow * sideLength);
@@ -212,7 +212,7 @@ void Piece::Drop(Piece& other) {
 				for (int wellRow = this->maxRow - 1; wellRow >= 0; wellRow--) {
 					//check for piece
 					if (this->piece[wellCol][wellRow]) {
-						dropDistance = GetSmallestDistance(wellRow-1, pieceRowInWell, dropDistance);
+						dropDistance = GetSmallestDistance(wellRow - 1, pieceRowInWell, dropDistance);
 					}
 				}
 			}
@@ -220,7 +220,43 @@ void Piece::Drop(Piece& other) {
 		}
 	}
 
-	other.Move(0, dropDistance, true,true);
+	other.Move(0, dropDistance, true, true);
+}
+
+bool Piece::CanRotateLeft(Piece& other) {
+	for (int row = 0; row < other.maxRow; row++) {
+		for (int col = 0; col < other.maxCol; col++) {
+			if (other.piece[col][row]) {
+				int newRow = other.maxCol - 1 - col;
+				int newCol = row;
+
+				if (piece[newCol + other.left][newRow + other.top])
+					return false;
+			}
+		}
+
+	}
+	return true;
+
+}
+void Piece::RotateLeft() {
+	int n = maxCol;
+	int f = floor((float) n / 2.0);
+	int c = ceil((float) n / 2.0);
+
+	for (int x = 0; x < f; x++)
+		for (int y = 0; y < c; y++) {
+
+			bool temp = piece[x][y];
+			piece[x][y] = piece[n - 1 - y][x];
+			piece[n - 1 - y][x] = piece[n - 1 - x][n - 1 - y];
+			piece[n - 1 - x][n - 1 - y] = piece[y][n - 1 - x];
+			piece[y][n - 1 - x] = temp;
+//			a[x, y] = a[y, n - 1 - x]
+//			a[y, n - 1 - x] = a[n - 1 - x, n - 1 - y]
+//			a[n - 1 - x, n - 1 - y] = a[n - 1 - y, x]
+//			a[n - 1 - y, x] = temp
+		}
 }
 
 int Piece::GetSmallestDistance(int wellRow, int pieceRowInWell, int currentDistance) {

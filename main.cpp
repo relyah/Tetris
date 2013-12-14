@@ -79,10 +79,10 @@ GLint uniformMytexture;
 bool wellEmpty = true;
 bool isGameOver = false;
 GLuint vs, fs;
-GLuint vbo_cube, vbo_fixed; //, vbo_cube_texcoords; //vertex buffer object
+GLuint vbo_cube, vbo_fixed; //vertex buffer object
 GLuint ibo_cube_elements, ibo_fixed; //index buffer object
-GLint attribute_coord3d, attribute_colour, attribute_normal, attribute_texcoord;
-GLint uniform_mvp, uniform_m, uniform_v, uniform_p, uniform_mytexture;
+GLint attribute_coord3d, attribute_colour, attribute_normal;
+GLint uniform_m, uniform_v, uniform_p;
 int screen_width;
 int screen_height;
 Piece cp = Piece(3, 3, 0.0, 0.0, 0.0);
@@ -109,9 +109,9 @@ int init_resources(void) {
 	glBufferData(GL_ARRAY_BUFFER, cs.size() * sizeof(float), &cs[0], GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	GLushort cube_elements[] = {
-	// front
-			0, 1, 2 };
+//	GLushort cube_elements[] = {
+//	// front
+//			0, 1, 2 };
 
 //	 GLushort cube_elements[] = {
 //	    // front
@@ -140,71 +140,16 @@ int init_resources(void) {
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, el.size() * sizeof(unsigned short), &el[0], GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-	if ((vs = create_shader("cube.v.glsl", GL_VERTEX_SHADER)) == 0)
+	program = create_program("cube.v.glsl", "cube.f.glsl");
+	if (program == 0)
 		return 0;
-	if ((fs = create_shader("cube.f.glsl", GL_FRAGMENT_SHADER)) == 0)
-		return 0;
+	attribute_coord3d = get_attrib(program, "vertex_position");
+	attribute_normal = get_attrib(program, "vertex_normal");
+	attribute_colour = get_attrib(program, "vertex_colour");
 
-	program = glCreateProgram();
-	glAttachShader(program, vs);
-	glAttachShader(program, fs);
-	glLinkProgram(program);
-	GLint link_ok = GL_FALSE;
-	glGetProgramiv(program, GL_LINK_STATUS, &link_ok);
-	if (!link_ok) {
-		fprintf(stderr, "glLinkProgram:");
-		return 0;
-	}
-
-	const char* attribute_name = "v_coord";
-	attribute_coord3d = glGetAttribLocation(program, attribute_name);
-	if (attribute_coord3d == -1) {
-		fprintf(stderr, "Could not bind attribute %s\n", attribute_name);
-		return 0;
-	}
-
-//	attribute_name = "v_normal";
-//	attribute_normal = glGetAttribLocation(program, attribute_name);
-//	if (attribute_colour == -1) {
-//		fprintf(stderr, "Could not bind attribute %s\n", attribute_name);
-//		return 0;
-//	}
-//
-//	attribute_name = "texcoord";
-//	attribute_texcoord = glGetAttribLocation(program, attribute_name);
-//	if (attribute_texcoord == -1) {
-//		fprintf(stderr, "Could not bind attribute %s\n", attribute_name);
-//		return 0;
-//	}
-
-	const char* uniform_name;
-	uniform_name = "model";
-	uniform_m = glGetUniformLocation(program, uniform_name);
-	if (uniform_m == -1) {
-		fprintf(stderr, "Could not bind uniform %s\n", uniform_name);
-		return 0;
-	}
-
-	uniform_name = "view";
-	uniform_v = glGetUniformLocation(program, uniform_name);
-	if (uniform_v == -1) {
-		fprintf(stderr, "Could not bind uniform %s\n", uniform_name);
-		return 0;
-	}
-
-	uniform_name = "projection";
-	uniform_p = glGetUniformLocation(program, uniform_name);
-	if (uniform_p == -1) {
-		fprintf(stderr, "Could not bind uniform %s\n", uniform_name);
-		return 0;
-	}
-//
-//	uniform_name = "mvp";
-//	uniform_mvp = glGetUniformLocation(program, uniform_name);
-//	if (uniform_mvp == -1) {
-//		fprintf(stderr, "Could not bind uniform %s\n", uniform_name);
-//		return 0;
-//	}
+	uniform_m = get_uniform(program, "model");
+	uniform_v = get_uniform(program,"view");
+	uniform_p = get_uniform(program, "projection");
 
 //	glGenTextures(1, &textureId);
 //	glBindTexture(GL_TEXTURE_2D, textureId);
@@ -346,8 +291,8 @@ void onDisplay() {
 	glUseProgram(program);
 
 	glEnableVertexAttribArray(attribute_coord3d);
-	glEnableVertexAttribArray(attribute_texcoord);
 	glEnableVertexAttribArray(attribute_normal);
+	glEnableVertexAttribArray(attribute_colour);
 
 	if (!wellEmpty) {
 		glUniformMatrix4fv(uniform_m, 1, GL_FALSE, glm::value_ptr(translate_fixed));
@@ -358,6 +303,17 @@ void onDisplay() {
 		GL_FLOAT,
 		GL_FALSE, sizeof(struct PC),  // stride
 		0);  // offset
+
+		glVertexAttribPointer(attribute_normal, 3,
+		GL_FLOAT,
+		GL_FALSE, sizeof(struct PC),  // stride
+		(GLvoid*) offsetof(struct PC, normal));
+
+		glVertexAttribPointer(attribute_colour, 3,
+		GL_FLOAT,
+		GL_FALSE, sizeof(struct PC),  // stride
+		(GLvoid*) offsetof(struct PC, colour));
+
 		int size = 0;
 		glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
 		glDrawElements(GL_TRIANGLES, size / sizeof(GLushort), GL_UNSIGNED_SHORT, 0);
@@ -375,25 +331,15 @@ void onDisplay() {
 		GL_FALSE, sizeof(struct PC),  // stride
 		0);  // offset
 
-//	glVertexAttribPointer(attribute_texcoord, 2,
-//	GL_FLOAT,
-//	GL_FALSE, sizeof(struct attributes),  // stride
-//	(GLvoid*) offsetof(struct attributes, texture));
-//
-//	glVertexAttribPointer(attribute_normal, 3,
-//	GL_FLOAT,
-//	GL_FALSE, sizeof(struct attributes),  // stride
-//	(GLvoid*) offsetof(struct attributes, normal));
+		glVertexAttribPointer(attribute_normal, 3,
+		GL_FLOAT,
+		GL_FALSE, sizeof(struct PC),  // stride
+		(GLvoid*) offsetof(struct PC, normal));
 
-//	glEnableVertexAttribArray(attribute_texcoord);
-//	glBindBuffer(GL_ARRAY_BUFFER, vbo_cube_texcoords);
-//	glVertexAttribPointer(attribute_texcoord, // attribute
-//	2,                  // number of elements per vertex, here (x,y)
-//	GL_FLOAT,           // the type of each element
-//	GL_FALSE,           // take our values as-is
-//	0,                  // no extra data between each position
-//	0                   // offset of first element
-//	);
+		glVertexAttribPointer(attribute_colour, 3,
+		GL_FLOAT,
+		GL_FALSE, sizeof(struct PC),  // stride
+		(GLvoid*) offsetof(struct PC, colour));
 
 //	glActiveTexture(GL_TEXTURE0);
 //	glBindTexture(GL_TEXTURE_2D, textureId);

@@ -65,6 +65,7 @@ public:
 
 private:
 	void RemoveGaps();
+	void RemoveFullRows();
 	int GetSmallestDistance(int wellRow, int pieceRowInWell, int currentDistanc);
 	int GetBottomRow();
 	void PushIntoVector(std::vector<float> &vector, PC &pc);

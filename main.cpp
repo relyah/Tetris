@@ -281,8 +281,8 @@ void timerCallBack(int value) {
 				cp = Piece(3, 3, 0.0, 0.0, 0.0);
 				cp.Set(0, 0, true);
 				cp.Set(1, 0, true);
-				cp.Set(1, 1, true);
-				cp.Set(2, 1, true);
+				//cp.Set(1, 1, true);
+				//cp.Set(2, 1, true);
 
 				if (well.CanAdd(cp)) {
 					GenerateBuffers(cp,vbo_cube,ibo_cube_elements);

@@ -143,6 +143,8 @@ void Piece::Add(Piece& other) {
 			this->piece[other.left + c][other.top + r] = true;
 		}
 	}
+
+	RemoveFullRows();
 }
 
 void Piece::Increment(bool isIncX, bool isIncY, bool isIncZ) {
@@ -315,7 +317,7 @@ void Piece::RemoveGaps() {
 	if (emptyRows > 0 || (emptyCols > 0 && emptyCols < maxCol)) {
 		for (int row = emptyRows; row < maxRow; row++) {
 			for (int col = emptyCols; col < maxCol; col++) {
-				piece[col-emptyCols][row - emptyRows] = piece[col][row];
+				piece[col - emptyCols][row - emptyRows] = piece[col][row];
 				piece[col][row] = false;
 			}
 
@@ -323,76 +325,99 @@ void Piece::RemoveGaps() {
 	}
 }
 
-int Piece::GetSmallestDistance(int wellRow, int pieceRowInWell, int currentDistance) {
-	int newDD = wellRow - pieceRowInWell; //calculate distance
-	if (newDD < currentDistance) {
-		return newDD;
-	} else {
-		return currentDistance;
+void Piece::RemoveFullRows() {
+	for (int row = 0; row < maxRow; row++) {
+		bool isRowFull = true;
+		for (int col = 0; col < maxCol; col++) {
+			isRowFull &= piece[col][row];
+		}
+
+		if (isRowFull) {
+			for (int col = 0; col < maxCol; col++) {
+				piece[col][row] = false;
+			}
+
+			for (int dropRow = row-1; dropRow >=0; dropRow--) {
+				for (int col = 0; col < maxCol; col++) {
+				piece[col][dropRow+1] = piece[col][dropRow];
+				piece[col][dropRow] = false;
+			}
+		}
 	}
+
+}
+}
+
+int Piece::GetSmallestDistance(int wellRow, int pieceRowInWell, int currentDistance) {
+int newDD = wellRow - pieceRowInWell; //calculate distance
+if (newDD < currentDistance) {
+	return newDD;
+} else {
+	return currentDistance;
+}
 }
 
 int Piece::GetBottomRow() {
-	for (int row = maxRow - 1; row >= 0; row--) {
-		for (int col = maxCol - 1; col >= 0; col--) {
-			if (piece[col][row])
-				return row;
-		}
+for (int row = maxRow - 1; row >= 0; row--) {
+	for (int col = maxCol - 1; col >= 0; col--) {
+		if (piece[col][row])
+			return row;
 	}
-	return 0;
+}
+return 0;
 }
 
 void Piece::PushIntoVector(std::vector<float> &cs, PC &pc) {
-	cs.push_back(pc.x);
-	cs.push_back(pc.y);
-	cs.push_back(pc.z);
+cs.push_back(pc.x);
+cs.push_back(pc.y);
+cs.push_back(pc.z);
 }
 
 void Piece::MakeElements(std::vector<unsigned short> &el, int numElements, int cubeNum) {
 
-	int offset = numElements * cubeNum;
+int offset = numElements * cubeNum;
 //front
-	el.push_back(0 + offset);
-	el.push_back(1 + offset);
-	el.push_back(2 + offset);
-	el.push_back(2 + offset);
-	el.push_back(3 + offset);
-	el.push_back(0 + offset);
+el.push_back(0 + offset);
+el.push_back(1 + offset);
+el.push_back(2 + offset);
+el.push_back(2 + offset);
+el.push_back(3 + offset);
+el.push_back(0 + offset);
 //top
-	el.push_back(4 + offset);
-	el.push_back(5 + offset);
-	el.push_back(6 + offset);
-	el.push_back(6 + offset);
-	el.push_back(7 + offset);
-	el.push_back(4 + offset);
+el.push_back(4 + offset);
+el.push_back(5 + offset);
+el.push_back(6 + offset);
+el.push_back(6 + offset);
+el.push_back(7 + offset);
+el.push_back(4 + offset);
 //back
-	el.push_back(8 + offset);
-	el.push_back(9 + offset);
-	el.push_back(10 + offset);
-	el.push_back(10 + offset);
-	el.push_back(11 + offset);
-	el.push_back(8 + offset);
+el.push_back(8 + offset);
+el.push_back(9 + offset);
+el.push_back(10 + offset);
+el.push_back(10 + offset);
+el.push_back(11 + offset);
+el.push_back(8 + offset);
 //bottom
-	el.push_back(12 + offset);
-	el.push_back(13 + offset);
-	el.push_back(14 + offset);
-	el.push_back(14 + offset);
-	el.push_back(15 + offset);
-	el.push_back(12 + offset);
+el.push_back(12 + offset);
+el.push_back(13 + offset);
+el.push_back(14 + offset);
+el.push_back(14 + offset);
+el.push_back(15 + offset);
+el.push_back(12 + offset);
 //left
-	el.push_back(16 + offset);
-	el.push_back(17 + offset);
-	el.push_back(18 + offset);
-	el.push_back(18 + offset);
-	el.push_back(19 + offset);
-	el.push_back(16 + offset);
+el.push_back(16 + offset);
+el.push_back(17 + offset);
+el.push_back(18 + offset);
+el.push_back(18 + offset);
+el.push_back(19 + offset);
+el.push_back(16 + offset);
 //rightunsigned
-	el.push_back(20 + offset);
-	el.push_back(21 + offset);
-	el.push_back(22 + offset);
-	el.push_back(22 + offset);
-	el.push_back(23 + offset);
-	el.push_back(20 + offset);
+el.push_back(20 + offset);
+el.push_back(21 + offset);
+el.push_back(22 + offset);
+el.push_back(22 + offset);
+el.push_back(23 + offset);
+el.push_back(20 + offset);
 
 }
 

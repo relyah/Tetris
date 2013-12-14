@@ -126,7 +126,7 @@ void Piece::ConvertToCubes(std::vector<float> &cs, std::vector<unsigned short> &
 bool Piece::CanAdd(Piece& other) {
 	for (int c = 0; c < other.maxCol; c++) {
 		for (int r = 0; r < other.maxRow; r++) {
-			if (this->piece[other.left + c][other.top + r])
+			if (other.piece[c][r] && this->piece[other.left + c][other.top + r])
 				return false;
 		}
 	}
@@ -208,11 +208,11 @@ void Piece::Drop(Piece& other) {
 				dropDistance = GetSmallestDistance(this->maxRow - 1, pieceRowInWell, dropDistance);
 
 				//get drop distance when well contains pieces
+				int wellCol = col + other.left;
 				for (int wellRow = this->maxRow - 1; wellRow >= 0; wellRow--) {
-					int wellCol = col + other.left;
 					//check for piece
 					if (this->piece[wellCol][wellRow]) {
-						dropDistance = GetSmallestDistance(wellRow, pieceRowInWell, dropDistance);
+						dropDistance = GetSmallestDistance(wellRow-1, pieceRowInWell, dropDistance);
 					}
 				}
 			}

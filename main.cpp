@@ -215,6 +215,8 @@ int init_resources(void) {
 	return 1;
 }
 
+int moveDelay=0;
+
 void timerCallBack(int value) {
 
 	switch (specialKey) {
@@ -231,9 +233,11 @@ void timerCallBack(int value) {
 	}
 	specialKey = -1;
 
+	bool isDrop = false;
 	switch (key) {
 	case SPACEBAR:
 		well.Drop(cp);
+		isDrop = true;
 		break;
 	}
 	key = -1;
@@ -242,46 +246,56 @@ void timerCallBack(int value) {
 		if (well.CanMove(cp)) {
 			cp.Move(0, 1);
 		} else {
-			wellEmpty = false;
+			if (isDrop || moveDelay > 10) {
+				moveDelay = 0;
+				isDrop = false;
+				wellEmpty = false;
 
-			well.Add(cp);
+				well.Add(cp);
 
-			std::vector<float> cs1;
-			std::vector<unsigned short> el1;
-			well.ConvertToCubes(cs1, el1);
+				std::vector<float> cs1;
+				std::vector<unsigned short> el1;
+				well.ConvertToCubes(cs1, el1);
 
-			glGenBuffers(1, &vbo_fixed);
-			glBindBuffer(GL_ARRAY_BUFFER, vbo_fixed);
-			glBufferData(GL_ARRAY_BUFFER, cs1.size() * sizeof(float), &cs1[0], GL_STATIC_DRAW);
-			glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-			glGenBuffers(1, &ibo_fixed);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_fixed);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, el1.size() * sizeof(unsigned short), &el1[0], GL_STATIC_DRAW);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-			translate_fixed = glm::translate(glm::mat4(1.0f), glm::vec3(well.X(), well.Y() + 14.0, well.Z()));
-
-			cp = Piece(3, 3, 0.0, 0.0, 0.0);
-			cp.Set(0, 0, true);
-
-			if (well.CanAdd(cp)) {
-				std::vector<float> cs2;
-				std::vector<unsigned short> el2;
-				cp.ConvertToCubes(cs2, el2);
-
-				glGenBuffers(1, &vbo_cube);
-				glBindBuffer(GL_ARRAY_BUFFER, vbo_cube);
-				glBufferData(GL_ARRAY_BUFFER, cs2.size() * sizeof(float), &cs2[0], GL_STATIC_DRAW);
+				glGenBuffers(1, &vbo_fixed);
+				glBindBuffer(GL_ARRAY_BUFFER, vbo_fixed);
+				glBufferData(GL_ARRAY_BUFFER, cs1.size() * sizeof(float), &cs1[0], GL_STATIC_DRAW);
 				glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-				glGenBuffers(1, &ibo_cube_elements);
-				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_cube_elements);
-				glBufferData(GL_ELEMENT_ARRAY_BUFFER, el2.size() * sizeof(unsigned short), &el2[0], GL_STATIC_DRAW);
+				glGenBuffers(1, &ibo_fixed);
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_fixed);
+				glBufferData(GL_ELEMENT_ARRAY_BUFFER, el1.size() * sizeof(unsigned short), &el1[0], GL_STATIC_DRAW);
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+				translate_fixed = glm::translate(glm::mat4(1.0f), glm::vec3(well.X(), well.Y() + 14.0, well.Z()));
+
+				cp = Piece(3, 3, 0.0, 0.0, 0.0);
+				cp.Set(0, 0, true);
+				cp.Set(1, 0, true);
+				cp.Set(1, 1, true);
+				cp.Set(2, 1, true);
+
+				if (well.CanAdd(cp)) {
+					std::vector<float> cs2;
+					std::vector<unsigned short> el2;
+					cp.ConvertToCubes(cs2, el2);
+
+					glGenBuffers(1, &vbo_cube);
+					glBindBuffer(GL_ARRAY_BUFFER, vbo_cube);
+					glBufferData(GL_ARRAY_BUFFER, cs2.size() * sizeof(float), &cs2[0], GL_STATIC_DRAW);
+					glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+					glGenBuffers(1, &ibo_cube_elements);
+					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_cube_elements);
+					glBufferData(GL_ELEMENT_ARRAY_BUFFER, el2.size() * sizeof(unsigned short), &el2[0], GL_STATIC_DRAW);
+					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+				} else {
+					isGameOver = true;
+				}
 			} else {
-				isGameOver = true;
+				moveDelay++;
 			}
+
 		}
 	} else {
 		cp.Increment(false, true, false);
@@ -291,7 +305,7 @@ void timerCallBack(int value) {
 		translate = glm::translate(glm::mat4(1.0f), glm::vec3(cp.X(), cp.Y() + 14.0, cp.Z()));
 
 		glm::mat4 view = glm::lookAt(glm::vec3(0.0, 0.0, -40.0),  // the position of your camera, in world space
-		glm::vec3(0.0, 0.0, 0.0), // where you want to look at, in world space
+		glm::vec3(0.0, 0.0, 0.0),  // where you want to look at, in world space
 		glm::vec3(0.0, 1.0, 0.0)); //up direction; probably glm::vec3(0,1,0), but (0,-1,0) would make you looking upside-down, which can be great too
 
 		glm::mat4 projection = glm::perspective(45.0f, 1.0f * screen_width / screen_height, 0.1f, 100.0f);

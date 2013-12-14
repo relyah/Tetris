@@ -19,6 +19,8 @@ struct PC {
 	float x;
 	float y;
 	float z;
+	float normal[3];
+	float colour[3];
 };
 
 class Piece {
@@ -68,7 +70,7 @@ private:
 	void RemoveFullRows();
 	int GetSmallestDistance(int wellRow, int pieceRowInWell, int currentDistanc);
 	int GetBottomRow();
-	void PushIntoVector(std::vector<float> &vector, PC &pc);
+	void PushIntoVector(std::vector<float> &vector, PC &pc, float *normal, float* colour);
 	void MakeElements(std::vector<unsigned short> &el, int numElements, int cubeNum);
 };
 

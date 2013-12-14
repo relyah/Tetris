@@ -13,6 +13,7 @@
 #include "Piece.h"
 
 #define SPACEBAR 32
+#define ESCAPE 27
 #define ROTATE_LEFT 65 //capital A
 #define ROTATE_RIGHT 83 //capital S
 
@@ -84,7 +85,7 @@ GLint attribute_coord3d, attribute_colour, attribute_normal, attribute_texcoord;
 GLint uniform_mvp, uniform_m, uniform_v, uniform_p, uniform_mytexture;
 int screen_width;
 int screen_height;
-Piece cp = Piece(3,3, 0.0, 0.0, 0.0);
+Piece cp = Piece(3, 3, 0.0, 0.0, 0.0);
 Piece well = Piece(10, 14, 0.0, 0.0, 0.0);
 glm::mat4 translate;
 glm::mat4 translate_fixed;
@@ -95,9 +96,9 @@ int moveDelay = 0;
 int init_resources(void) {
 
 	cp.Set(0, 0, true);
-	cp.Set(0,1,true);
-	cp.Set(0,2,true);
-	cp.Set(1,2,true);
+	cp.Set(0, 1, true);
+	cp.Set(0, 2, true);
+	cp.Set(1, 2, true);
 	std::vector<float> cs;
 	std::vector<unsigned short> el;
 	cp.ConvertToCubes(cs, el);
@@ -241,21 +242,19 @@ void timerCallBack(int value) {
 	specialKey = -1;
 
 	bool isDrop = false;
-	switch (toupper(key)) {
+	switch (key) {
 	case SPACEBAR:
 		well.Drop(cp);
 		isDrop = true;
 		break;
 	case ROTATE_LEFT:
-		if (well.CanRotateLeft(cp))
-		{
+		if (well.CanRotateLeft(cp)) {
 			cp.RotateLeft();
 			GenerateBuffers(cp, vbo_cube, ibo_cube_elements);
 		}
 		break;
 	case ROTATE_RIGHT:
-		if (well.CanRotateRight(cp))
-		{
+		if (well.CanRotateRight(cp)) {
 			cp.RotateRight();
 			GenerateBuffers(cp, vbo_cube, ibo_cube_elements);
 		}
@@ -285,7 +284,7 @@ void timerCallBack(int value) {
 				//cp.Set(2, 1, true);
 
 				if (well.CanAdd(cp)) {
-					GenerateBuffers(cp,vbo_cube,ibo_cube_elements);
+					GenerateBuffers(cp, vbo_cube, ibo_cube_elements);
 				} else {
 					isGameOver = true;
 				}
@@ -317,8 +316,7 @@ void timerCallBack(int value) {
 	}
 }
 
-void GenerateBuffers(Piece& p, GLuint& vbo, GLuint& ibo)
-{
+void GenerateBuffers(Piece& p, GLuint& vbo, GLuint& ibo) {
 	std::vector<float> cs;
 	std::vector<unsigned short> el;
 	p.ConvertToCubes(cs, el);
@@ -326,8 +324,8 @@ void GenerateBuffers(Piece& p, GLuint& vbo, GLuint& ibo)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-	glDeleteBuffers(1,&vbo);
-	glDeleteBuffers(1,&ibo);
+	glDeleteBuffers(1, &vbo);
+	glDeleteBuffers(1, &ibo);
 
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -445,7 +443,9 @@ void onReshape(int width, int height) {
 }
 
 void keyPressed(unsigned char key, int x, int y) {
-	::key = key;
+	::key = toupper(key);
+
+	if (key==ESCAPE) glutLeaveMainLoop();
 }
 
 void specialKeyPressed(int key, int x, int y) {
@@ -457,11 +457,9 @@ int main(int argc, char* argv[]) {
 	glutInit(&argc, argv);
 //glutInitContextVersion(4, 0);
 //glutInitContextFlags(GLUT_FORWARD_COMPATIBLE);
-//glutInitContextProfile(GLUT_CORE_PROFILE);
+	glutInitContextProfile(GLUT_CORE_PROFILE);
 
-	glutSetOption(
-	GLUT_ACTION_ON_WINDOW_CLOSE,
-	GLUT_ACTION_GLUTMAINLOOP_RETURNS);
+	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION); //alternative GLUT_ACTION_GLUTMAINLOOP_RETURNS
 
 	glutInitDisplayMode(GLUT_RGBA | GLUT_ALPHA | GLUT_DOUBLE | GLUT_DEPTH);
 
@@ -479,6 +477,7 @@ int main(int argc, char* argv[]) {
 	 the program can initialise the resources */
 	if (1 == init_resources()) {
 		/* We can display it if everything goes OK */
+
 		glutDisplayFunc(onDisplay);
 		glutReshapeFunc(onReshape);
 		glutKeyboardFunc(keyPressed);

@@ -78,40 +78,40 @@ void Piece::ConvertToCubes(std::vector<float> &cs, std::vector<unsigned short> &
 			PC b_br = { f_tr.x, f_bl.y, -1.0 };
 
 			//front
-			PushIntoVector(cs, f_bl);
-			PushIntoVector(cs, f_br);
-			PushIntoVector(cs, f_tr);
-			PushIntoVector(cs, f_tl);
+			PushIntoVector(cs, f_bl, new float[3] { 0.0, 0.0, 1.0 }, new float[3] { 0.8, 0.1, 0.0 });
+			PushIntoVector(cs, f_br, new float[3] { 0.0, 0.0, 1.0 }, new float[3] { 0.8, 0.1, 0.0 });
+			PushIntoVector(cs, f_tr, new float[3] { 0.0, 0.0, 1.0 }, new float[3] { 0.8, 0.1, 0.0 });
+			PushIntoVector(cs, f_tl, new float[3] { 0.0, 0.0, 1.0 }, new float[3] { 0.8, 0.1, 0.0 });
 
 			//top
-			PushIntoVector(cs, f_tl);
-			PushIntoVector(cs, f_tr);
-			PushIntoVector(cs, b_tr);
-			PushIntoVector(cs, b_tl);
+			PushIntoVector(cs, f_tl, new float[3] { 0.0, 1.0, 0.0 }, new float[3] { 0.1, 0.8, 0.0 });
+			PushIntoVector(cs, f_tr, new float[3] { 0.0, 1.0, 0.0 }, new float[3] { 0.1, 0.8, 0.0 });
+			PushIntoVector(cs, b_tr, new float[3] { 0.0, 1.0, 0.0 }, new float[3] { 0.1, 0.8, 0.0 });
+			PushIntoVector(cs, b_tl, new float[3] { 0.0, 1.0, 0.0 }, new float[3] { 0.1, 0.8, 0.0 });
 
 			//back
-			PushIntoVector(cs, b_br);
-			PushIntoVector(cs, b_bl);
-			PushIntoVector(cs, b_tl);
-			PushIntoVector(cs, b_tr);
+			PushIntoVector(cs, b_br, new float[3] { 0.0, 0.0, -1.0 }, new float[3] { 0.1, 0.0, 0.8 });
+			PushIntoVector(cs, b_bl, new float[3] { 0.0, 0.0, -1.0 }, new float[3] { 0.1, 0.0, 0.8 });
+			PushIntoVector(cs, b_tl, new float[3] { 0.0, 0.0, -1.0 }, new float[3] { 0.1, 0.0, 0.8 });
+			PushIntoVector(cs, b_tr, new float[3] { 0.0, 0.0, -1.0 }, new float[3] { 0.1, 0.0, 0.8 });
 
 			//bottom
-			PushIntoVector(cs, b_bl);
-			PushIntoVector(cs, b_br);
-			PushIntoVector(cs, f_br);
-			PushIntoVector(cs, f_bl);
+			PushIntoVector(cs, b_bl, new float[3] { 0.0, -1.0, 0.0 }, new float[3] { 0.0, 0.5, 0.5 });
+			PushIntoVector(cs, b_br, new float[3] { 0.0, -1.0, 0.0 }, new float[3] { 0.0, 0.5, 0.5 });
+			PushIntoVector(cs, f_br, new float[3] { 0.0, -1.0, 0.0 }, new float[3] { 0.0, 0.5, 0.5 });
+			PushIntoVector(cs, f_bl, new float[3] { 0.0, -1.0, 0.0 }, new float[3] { 0.0, 0.5, 0.5 });
 
 			//left
-			PushIntoVector(cs, b_bl);
-			PushIntoVector(cs, f_bl);
-			PushIntoVector(cs, f_tl);
-			PushIntoVector(cs, b_tl);
+			PushIntoVector(cs, b_bl, new float[3] { -1.0, 0.0, 0.0 }, new float[3] { 0.5, 0.5, 0.0 });
+			PushIntoVector(cs, f_bl, new float[3] { -1.0, 0.0, 0.0 }, new float[3] { 0.5, 0.5, 0.0 });
+			PushIntoVector(cs, f_tl, new float[3] { -1.0, 0.0, 0.0 }, new float[3] { 0.5, 0.5, 0.0 });
+			PushIntoVector(cs, b_tl, new float[3] { -1.0, 0.0, 0.0 }, new float[3] { 0.5, 0.5, 0.0 });
 
 			//right
-			PushIntoVector(cs, f_br);
-			PushIntoVector(cs, b_br);
-			PushIntoVector(cs, b_tr);
-			PushIntoVector(cs, f_tr);
+			PushIntoVector(cs, f_br, new float[3] { 1.0, 0.0, 0.0 }, new float[3] { 1.0, 0.2, 0.4 });
+			PushIntoVector(cs, b_br, new float[3] { 1.0, 0.0, 0.0 }, new float[3] { 1.0, 0.2, 0.4 });
+			PushIntoVector(cs, b_tr, new float[3] { 1.0, 0.0, 0.0 }, new float[3] { 1.0, 0.2, 0.4 });
+			PushIntoVector(cs, f_tr, new float[3] { 1.0, 0.0, 0.0 }, new float[3] { 1.0, 0.2, 0.4 });
 
 			MakeElements(el, numElements, cubeNum);
 
@@ -337,87 +337,95 @@ void Piece::RemoveFullRows() {
 				piece[col][row] = false;
 			}
 
-			for (int dropRow = row-1; dropRow >=0; dropRow--) {
+			for (int dropRow = row - 1; dropRow >= 0; dropRow--) {
 				for (int col = 0; col < maxCol; col++) {
-				piece[col][dropRow+1] = piece[col][dropRow];
-				piece[col][dropRow] = false;
+					piece[col][dropRow + 1] = piece[col][dropRow];
+					piece[col][dropRow] = false;
+				}
 			}
 		}
-	}
 
-}
+	}
 }
 
 int Piece::GetSmallestDistance(int wellRow, int pieceRowInWell, int currentDistance) {
-int newDD = wellRow - pieceRowInWell; //calculate distance
-if (newDD < currentDistance) {
-	return newDD;
-} else {
-	return currentDistance;
-}
+	int newDD = wellRow - pieceRowInWell; //calculate distance
+	if (newDD < currentDistance) {
+		return newDD;
+	} else {
+		return currentDistance;
+	}
 }
 
 int Piece::GetBottomRow() {
-for (int row = maxRow - 1; row >= 0; row--) {
-	for (int col = maxCol - 1; col >= 0; col--) {
-		if (piece[col][row])
-			return row;
+	for (int row = maxRow - 1; row >= 0; row--) {
+		for (int col = maxCol - 1; col >= 0; col--) {
+			if (piece[col][row])
+				return row;
+		}
 	}
-}
-return 0;
+	return 0;
 }
 
-void Piece::PushIntoVector(std::vector<float> &cs, PC &pc) {
-cs.push_back(pc.x);
-cs.push_back(pc.y);
-cs.push_back(pc.z);
+void Piece::PushIntoVector(std::vector<float> &cs, PC &pc, float *normal, float* colour) {
+	cs.push_back(pc.x);
+	cs.push_back(pc.y);
+	cs.push_back(pc.z);
+
+	cs.push_back(normal[0]);
+	cs.push_back(normal[1]);
+	cs.push_back(normal[2]);
+
+	cs.push_back(colour[0]);
+	cs.push_back(colour[1]);
+	cs.push_back(colour[2]);
 }
 
 void Piece::MakeElements(std::vector<unsigned short> &el, int numElements, int cubeNum) {
 
-int offset = numElements * cubeNum;
+	int offset = numElements * cubeNum;
 //front
-el.push_back(0 + offset);
-el.push_back(1 + offset);
-el.push_back(2 + offset);
-el.push_back(2 + offset);
-el.push_back(3 + offset);
-el.push_back(0 + offset);
+	el.push_back(0 + offset);
+	el.push_back(1 + offset);
+	el.push_back(2 + offset);
+	el.push_back(2 + offset);
+	el.push_back(3 + offset);
+	el.push_back(0 + offset);
 //top
-el.push_back(4 + offset);
-el.push_back(5 + offset);
-el.push_back(6 + offset);
-el.push_back(6 + offset);
-el.push_back(7 + offset);
-el.push_back(4 + offset);
+	el.push_back(4 + offset);
+	el.push_back(5 + offset);
+	el.push_back(6 + offset);
+	el.push_back(6 + offset);
+	el.push_back(7 + offset);
+	el.push_back(4 + offset);
 //back
-el.push_back(8 + offset);
-el.push_back(9 + offset);
-el.push_back(10 + offset);
-el.push_back(10 + offset);
-el.push_back(11 + offset);
-el.push_back(8 + offset);
+	el.push_back(8 + offset);
+	el.push_back(9 + offset);
+	el.push_back(10 + offset);
+	el.push_back(10 + offset);
+	el.push_back(11 + offset);
+	el.push_back(8 + offset);
 //bottom
-el.push_back(12 + offset);
-el.push_back(13 + offset);
-el.push_back(14 + offset);
-el.push_back(14 + offset);
-el.push_back(15 + offset);
-el.push_back(12 + offset);
+	el.push_back(12 + offset);
+	el.push_back(13 + offset);
+	el.push_back(14 + offset);
+	el.push_back(14 + offset);
+	el.push_back(15 + offset);
+	el.push_back(12 + offset);
 //left
-el.push_back(16 + offset);
-el.push_back(17 + offset);
-el.push_back(18 + offset);
-el.push_back(18 + offset);
-el.push_back(19 + offset);
-el.push_back(16 + offset);
+	el.push_back(16 + offset);
+	el.push_back(17 + offset);
+	el.push_back(18 + offset);
+	el.push_back(18 + offset);
+	el.push_back(19 + offset);
+	el.push_back(16 + offset);
 //rightunsigned
-el.push_back(20 + offset);
-el.push_back(21 + offset);
-el.push_back(22 + offset);
-el.push_back(22 + offset);
-el.push_back(23 + offset);
-el.push_back(20 + offset);
+	el.push_back(20 + offset);
+	el.push_back(21 + offset);
+	el.push_back(22 + offset);
+	el.push_back(22 + offset);
+	el.push_back(23 + offset);
+	el.push_back(20 + offset);
 
 }
 

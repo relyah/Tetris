@@ -18,6 +18,8 @@
 #define ROTATE_RIGHT 83 //capital S
 
 void GenerateBuffers(Piece& p, GLuint& vbo, GLuint& ibo);
+void MakePieces();
+void PickPiece();
 
 struct attributes {
 	GLfloat coord3d[3];
@@ -85,29 +87,22 @@ GLint attribute_coord3d, attribute_colour, attribute_normal;
 GLint uniform_m, uniform_v, uniform_p;
 int screen_width;
 int screen_height;
-Piece cp = Piece(3, 3, 0.0, 0.0, 0.0);
-Piece well = Piece(10, 14, 0.0, 0.0, 0.0);
 glm::mat4 translate;
 glm::mat4 translate_fixed;
 int specialKey = -1;
 unsigned char key;
 int moveDelay = 0;
 
+std::vector<Piece> pieces;
+Piece* well = 0;
+Piece* cp = 0;
+
 int init_resources(void) {
 
-	cp.Set(0, 0, true);
-	cp.Set(0, 1, true);
-	cp.Set(0, 2, true);
-	cp.Set(1, 2, true);
-	std::vector<float> cs;
-	std::vector<unsigned short> el;
-	cp.ConvertToCubes(cs, el);
+	MakePieces();
+	PickPiece();
 
-	glGenBuffers(1, &vbo_cube);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo_cube);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(cube), cube, GL_STATIC_DRAW);
-	glBufferData(GL_ARRAY_BUFFER, cs.size() * sizeof(float), &cs[0], GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	GenerateBuffers(*cp, vbo_cube, ibo_cube_elements);
 
 //	GLushort cube_elements[] = {
 //	// front
@@ -134,11 +129,6 @@ int init_resources(void) {
 //	    22, 23, 20,
 //	  };
 
-	glGenBuffers(1, &ibo_cube_elements);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_cube_elements);
-	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cube_elements), cube_elements,	GL_STATIC_DRAW);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, el.size() * sizeof(unsigned short), &el[0], GL_STATIC_DRAW);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	program = create_program("cube.v.glsl", "cube.f.glsl");
 	if (program == 0)
@@ -148,7 +138,7 @@ int init_resources(void) {
 	attribute_colour = get_attrib(program, "vertex_colour");
 
 	uniform_m = get_uniform(program, "model");
-	uniform_v = get_uniform(program,"view");
+	uniform_v = get_uniform(program, "view");
 	uniform_p = get_uniform(program, "projection");
 
 //	glGenTextures(1, &textureId);
@@ -174,13 +164,13 @@ void timerCallBack(int value) {
 
 	switch (specialKey) {
 	case GLUT_KEY_LEFT:
-		if (well.CanMove(cp, 1, 0)) {
-			cp.Move(1, 0, true);
+		if (well->CanMove(*cp, 1, 0)) {
+			cp->Move(1, 0, true);
 		}
 		break;
 	case GLUT_KEY_RIGHT:
-		if (well.CanMove(cp, -1, 0)) {
-			cp.Move(-1, 0, true);
+		if (well->CanMove(*cp, -1, 0)) {
+			cp->Move(-1, 0, true);
 		}
 		break;
 	}
@@ -189,47 +179,43 @@ void timerCallBack(int value) {
 	bool isDrop = false;
 	switch (key) {
 	case SPACEBAR:
-		well.Drop(cp);
+		well->Drop(*cp);
 		isDrop = true;
 		break;
 	case ROTATE_LEFT:
-		if (well.CanRotateLeft(cp)) {
-			cp.RotateLeft();
-			GenerateBuffers(cp, vbo_cube, ibo_cube_elements);
+		if (well->CanRotateLeft(*cp)) {
+			cp->RotateLeft();
+			GenerateBuffers(*cp, vbo_cube, ibo_cube_elements);
 		}
 		break;
 	case ROTATE_RIGHT:
-		if (well.CanRotateRight(cp)) {
-			cp.RotateRight();
-			GenerateBuffers(cp, vbo_cube, ibo_cube_elements);
+		if (well->CanRotateRight(*cp)) {
+			cp->RotateRight();
+			GenerateBuffers(*cp, vbo_cube, ibo_cube_elements);
 		}
 		break;
 	}
 	key = -1;
 
-	if (well.MustMove(cp)) {
-		if (well.CanMove(cp)) {
-			cp.Move(0, 1);
+	if (well->MustMove(*cp)) {
+		if (well->CanMove(*cp)) {
+			cp->Move(0, 1);
 		} else {
 			if (isDrop || moveDelay > 10) {
 				moveDelay = 0;
 				isDrop = false;
 				wellEmpty = false;
 
-				well.Add(cp);
+				well->Add(*cp);
 
-				GenerateBuffers(well, vbo_fixed, ibo_fixed);
+				GenerateBuffers(*well, vbo_fixed, ibo_fixed);
 
-				translate_fixed = glm::translate(glm::mat4(1.0f), glm::vec3(well.X(), well.Y() + 14.0, well.Z()));
+				translate_fixed = glm::translate(glm::mat4(1.0f), glm::vec3(well->X(), well->Y() + 14.0, well->Z()));
 
-				cp = Piece(3, 3, 0.0, 0.0, 0.0);
-				cp.Set(0, 0, true);
-				cp.Set(1, 0, true);
-				//cp.Set(1, 1, true);
-				//cp.Set(2, 1, true);
+				PickPiece();
 
-				if (well.CanAdd(cp)) {
-					GenerateBuffers(cp, vbo_cube, ibo_cube_elements);
+				if (well->CanAdd(*cp)) {
+					GenerateBuffers(*cp, vbo_cube, ibo_cube_elements);
 				} else {
 					isGameOver = true;
 				}
@@ -239,20 +225,19 @@ void timerCallBack(int value) {
 
 		}
 	} else {
-		cp.Increment(false, true, false);
+		cp->Increment(false, true, false);
 	}
 
 	if (!isGameOver) {
-		translate = glm::translate(glm::mat4(1.0f), glm::vec3(cp.X(), cp.Y() + 14.0, cp.Z()));
+		translate = glm::translate(glm::mat4(1.0f), glm::vec3(cp->X(), cp->Y() + 14.0, cp->Z()));
 
 		glm::mat4 view = glm::lookAt(glm::vec3(0.0, 0.0, -40.0),  // the position of your camera, in world space
 		glm::vec3(0.0, 0.0, 0.0),  // where you want to look at, in world space
 		glm::vec3(0.0, 1.0, 0.0)); //up direction; probably glm::vec3(0,1,0), but (0,-1,0) would make you looking upside-down, which can be great too
 
 		glm::mat4 projection = glm::perspective(45.0f, 1.0f * screen_width / screen_height, 0.1f, 100.0f);
-//glm::mat4 mvp = projection * view * model;// * anim;
+
 		glUseProgram(program);
-//glUniformMatrix4fv(uniform_mvp, 1, GL_FALSE, glm::value_ptr(mvp));
 //	glUniformMatrix4fv(uniform_m, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(uniform_v, 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(uniform_p, 1, GL_FALSE, glm::value_ptr(projection));
@@ -320,6 +305,15 @@ void onDisplay() {
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
+	glVertexAttribPointer(attribute_normal, 3,
+	GL_FLOAT,
+	GL_FALSE, sizeof(struct PC),  // stride
+	(GLvoid*) offsetof(struct PC, normal));
+
+	glVertexAttribPointer(attribute_colour, 3,
+	GL_FLOAT,
+	GL_FALSE, sizeof(struct PC),  // stride
+	(GLvoid*) offsetof(struct PC, colour));
 
 	if (!isGameOver) {
 		glUniformMatrix4fv(uniform_m, 1, GL_FALSE, glm::value_ptr(translate));
@@ -391,7 +385,8 @@ void onReshape(int width, int height) {
 void keyPressed(unsigned char key, int x, int y) {
 	::key = toupper(key);
 
-	if (key==ESCAPE) glutLeaveMainLoop();
+	if (key == ESCAPE)
+		glutLeaveMainLoop();
 }
 
 void specialKeyPressed(int key, int x, int y) {
@@ -440,4 +435,58 @@ int main(int argc, char* argv[]) {
 	 free resources and exit with a success */
 	free_resources();
 	return EXIT_SUCCESS;
+}
+
+void MakePieces() {
+	Piece t = Piece(3,3, 0.0, 0.0, 0.0);
+	t.Set(0, 0, true);
+	t.Set(1, 0, true);
+	t.Set(2, 0, true);
+	t.Set(1, 1, true);
+	t.Set(1, 2, true);
+
+	Piece i = Piece(3,3, 0.0, 0.0, 0.0);
+	i.Set(0, 0, true);
+	i.Set(0, 1, true);
+	i.Set(0, 2, true);
+
+	Piece l = Piece(3,3, 0.0, 0.0, 0.0);
+	l.Set(0, 0, true);
+	l.Set(0, 1, true);
+	l.Set(0, 2, true);
+	l.Set(1, 2, true);
+
+	Piece sqr = Piece(3,3, 0.0, 0.0, 0.0);
+	sqr.Set(0, 0, true);
+	sqr.Set(0, 1, true);
+	sqr.Set(1, 0, true);
+	sqr.Set(1, 1, true);
+
+	Piece zl = Piece(3,3, 0.0, 0.0, 0.0);
+	zl.Set(0, 0, true);
+	zl.Set(0, 1, true);
+	zl.Set(1, 1, true);
+	zl.Set(2, 1, true);
+
+	Piece zr = Piece(3,3, 0.0, 0.0, 0.0);
+	zr.Set(2, 0, true);
+	zr.Set(1, 0, true);
+	zr.Set(1, 1, true);
+	zr.Set(0, 1, true);
+
+//	pieces.push_back(t);
+//	pieces.push_back(i);
+//	pieces.push_back(l);
+	pieces.push_back(sqr);
+//	pieces.push_back(zl);
+//	pieces.push_back(zr);
+
+	well = new Piece(10, 14, 0.0, 0.0, 0.0);
+}
+
+void PickPiece(){
+
+	int piece = rand()%pieces.size();
+	cp = &(pieces[piece]);
+
 }

@@ -27,7 +27,7 @@ class Piece {
 
 	float x, y, z;
 	float incX, incY, incZ;
-	int maxRow, maxCol;
+	int maxCol, maxRow;
 	int left;
 	int top;
 	int sideLength;
@@ -37,7 +37,7 @@ public:
 	Piece(int maxCol, int maxRow, float x, float y, float z);
 	virtual ~Piece();
 
-	void Set(int column, int row, bool flag);
+	void Set(int col, int row, bool flag);
 
 	void ConvertToCubes(std::vector<float> &cs, std::vector<unsigned short> &el);
 

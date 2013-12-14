@@ -236,7 +236,7 @@ void timerCallBack(int value) {
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER, el1.size() * sizeof(unsigned short), &el1[0], GL_STATIC_DRAW);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-			translate_fixed = glm::translate(glm::mat4(1.0f), glm::vec3(well.X(),well.Y(),well.Z()));
+			translate_fixed = glm::translate(glm::mat4(1.0f), glm::vec3(well.X(),well.Y()+7.0,well.Z()));
 
 			cp = Piece(5, 5, 0.0, 0.0, 0.0);
 			cp.Set(0, 0, true);
@@ -259,7 +259,7 @@ void timerCallBack(int value) {
 		cp.Increment(false, true, false);
 	}
 
-	translate = glm::translate(glm::mat4(1.0f), glm::vec3(cp.X(), cp.Y(), cp.Z()));
+	translate = glm::translate(glm::mat4(1.0f), glm::vec3(cp.X(), cp.Y()+7.0, cp.Z()));
 //	if (yinc > -20.0) {
 //		yinc -= 0.2;
 //	} else {
@@ -310,7 +310,7 @@ void timerCallBack(int value) {
 //	}
 
 	//glm::mat4 model = translate; //glm::mat4(1.0f);//*anim;// glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 0.0, -4.0));// * anim;//
-	glm::mat4 view = glm::lookAt(glm::vec3(0.0, -20.0, -40.0),  // the position of your camera, in world space
+	glm::mat4 view = glm::lookAt(glm::vec3(0.0, 0.0, -40.0),  // the position of your camera, in world space
 	glm::vec3(0.0, 0.0, 0.0), // where you want to look at, in world space
 	glm::vec3(0.0, 1.0, 0.0)); //up direction; probably glm::vec3(0,1,0), but (0,-1,0) would make you looking upside-down, which can be great too
 

@@ -142,15 +142,14 @@ void Piece::Increment(bool isIncX, bool isIncY, bool isIncZ) {
 
 bool Piece::CanMove(Piece other) {
 
-	int otherMaxRow = other.maxRow - 1;
 	int otherMaxRowInWell = other.GetBottomRow() + other.top;
 	if (otherMaxRowInWell >= this->maxRow-1)
 		return false;
 
-	for (int row = otherMaxRow-1; row >= 0; row--) {
+	for (int row = other.maxRow-1; row >= 0; row--) {
 		for (int col = other.maxCol - 1; col >= 0; col--) {
 			if (other.piece[col][row]) {
-				if (this->piece[col + other.left][row + other.top])
+				if (this->piece[col + other.left][row + other.top+1])
 					return false;
 			}
 		}

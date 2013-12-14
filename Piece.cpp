@@ -56,22 +56,19 @@ void Piece::ConvertToCubes(std::vector<float> &cs, std::vector<unsigned short> &
 
 	int numElements = 24;
 	int cubeNum = 0;
-	float half = sideLength / 2.0;
 
-	float margin = 0.0;
-	int x = 0;
+	int col = 0;
 	for (PieceArray::iterator c = piece.begin(); c != piece.end(); ++c) {
 
-		int y = -1;
+		int row = -1;
 		for (PieceRowArray::iterator r = (*c).begin(); r != (*c).end(); ++r) {
-			y++;
+			row++;
 			if (!(*r))
 				continue;
 
-			PC f_bl = { (float) (left * sideLength - half + x * half + margin), (float) (-top * sideLength + half - y * half
-					+ margin), 1.0 };
-			PC f_br = { f_bl.x + sideLength - 2 * margin, f_bl.y, 1.0 };
-			PC f_tl = { f_bl.x, f_bl.y + sideLength - 2 * margin, 1.0 };
+			PC f_bl = { (float) (left * sideLength  + col * sideLength), (float) (-top * sideLength - (row+1) * sideLength), 1.0 };
+			PC f_br = { f_bl.x + sideLength, f_bl.y, 1.0 };
+			PC f_tl = { f_bl.x, f_bl.y + sideLength, 1.0 };
 			PC f_tr = { f_br.x, f_tl.y, 1.0 };
 			PC b_tl = { f_tl.x, f_tl.y, -1.0 };
 			PC b_tr = { f_tr.x, f_tr.y, -1.0 };
@@ -119,7 +116,7 @@ void Piece::ConvertToCubes(std::vector<float> &cs, std::vector<unsigned short> &
 			cubeNum++; //increment the cube counter;
 
 		}
-		x++;
+		col++;
 
 	}
 

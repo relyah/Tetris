@@ -84,7 +84,7 @@ GLint attribute_coord3d, attribute_colour, attribute_normal, attribute_texcoord;
 GLint uniform_mvp, uniform_m, uniform_v, uniform_p, uniform_mytexture;
 int screen_width;
 int screen_height;
-Piece cp = Piece(3, 3, 0.0, 0.0, 0.0);
+Piece cp = Piece(3,3, 0.0, 0.0, 0.0);
 Piece well = Piece(10, 14, 0.0, 0.0, 0.0);
 glm::mat4 translate;
 glm::mat4 translate_fixed;
@@ -96,6 +96,8 @@ int init_resources(void) {
 
 	cp.Set(0, 0, true);
 	cp.Set(0,1,true);
+	cp.Set(0,2,true);
+	cp.Set(1,2,true);
 	std::vector<float> cs;
 	std::vector<unsigned short> el;
 	cp.ConvertToCubes(cs, el);
@@ -252,6 +254,11 @@ void timerCallBack(int value) {
 		}
 		break;
 	case ROTATE_RIGHT:
+		if (well.CanRotateRight(cp))
+		{
+			cp.RotateRight();
+			GenerateBuffers(cp, vbo_cube, ibo_cube_elements);
+		}
 		break;
 	}
 	key = -1;

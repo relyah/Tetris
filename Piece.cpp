@@ -66,8 +66,9 @@ void Piece::ConvertToCubes(std::vector<float> &cs, std::vector<unsigned short> &
 			if (!(*r))
 				continue;
 
-			PC f_bl = { (float) (left * sideLength + col * sideLength), (float) (-top * sideLength - (row + 1) * sideLength),
-					1.0 };
+//			PC f_bl = { (float) (left * sideLength + col * sideLength), (float) (-top * sideLength - (row + 1) * sideLength),
+//					1.0 };
+			PC f_bl = { (float) (col * sideLength), (float) (-(row + 1) * sideLength), 1.0 };
 			PC f_br = { f_bl.x + sideLength, f_bl.y, 1.0 };
 			PC f_tl = { f_bl.x, f_bl.y + sideLength, 1.0 };
 			PC f_tr = { f_br.x, f_tl.y, 1.0 };
@@ -239,6 +240,24 @@ bool Piece::CanRotateLeft(Piece& other) {
 	return true;
 
 }
+
+bool Piece::CanRotateRight(Piece& other) {
+	for (int row = 0; row < other.maxRow; row++) {
+		for (int col = 0; col < other.maxCol; col++) {
+			if (other.piece[col][row]) {
+				int newRow = col;
+				int newCol = other.maxCol - 1 - row;
+
+				if (piece[newCol + other.left][newRow + other.top])
+					return false;
+			}
+		}
+
+	}
+	return true;
+
+}
+
 void Piece::RotateLeft() {
 	int n = maxCol;
 	int f = floor((float) n / 2.0);
@@ -252,11 +271,56 @@ void Piece::RotateLeft() {
 			piece[n - 1 - y][x] = piece[n - 1 - x][n - 1 - y];
 			piece[n - 1 - x][n - 1 - y] = piece[y][n - 1 - x];
 			piece[y][n - 1 - x] = temp;
-//			a[x, y] = a[y, n - 1 - x]
-//			a[y, n - 1 - x] = a[n - 1 - x, n - 1 - y]
-//			a[n - 1 - x, n - 1 - y] = a[n - 1 - y, x]
-//			a[n - 1 - y, x] = temp
 		}
+}
+
+void Piece::RotateRight() {
+	int n = maxCol;
+	int f = floor((float) n / 2.0);
+	int c = ceil((float) n / 2.0);
+
+	for (int x = 0; x < f; x++)
+		for (int y = 0; y < c; y++) {
+
+			bool temp = piece[x][y];
+			piece[x][y] = piece[y][n - 1 - x];
+
+			piece[y][n - 1 - x] = piece[n - 1 - x][n - 1 - y];
+			piece[n - 1 - x][n - 1 - y] = piece[n - 1 - y][x];
+			piece[n - 1 - y][x] = temp;
+		}
+
+	RemoveGaps();
+}
+
+void Piece::RemoveGaps() {
+	int emptyRows = 0;
+	int emptyCols = maxCol;
+	bool isRowEmpty = true;
+	for (int row = 0; row < maxRow; row++) {
+		for (int col = 0; col < maxCol; col++) {
+			if (piece[col][row]) {
+				isRowEmpty = false;
+				if (col < emptyCols) {
+					emptyCols = col;
+				}
+				break;
+			}
+		}
+		if (isRowEmpty) {
+			emptyRows++;
+		}
+	}
+
+	if (emptyRows > 0 || (emptyCols > 0 && emptyCols < maxCol)) {
+		for (int row = emptyRows; row < maxRow; row++) {
+			for (int col = emptyCols; col < maxCol; col++) {
+				piece[col-emptyCols][row - emptyRows] = piece[col][row];
+				piece[col][row] = false;
+			}
+
+		}
+	}
 }
 
 int Piece::GetSmallestDistance(int wellRow, int pieceRowInWell, int currentDistance) {

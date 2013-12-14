@@ -45,7 +45,9 @@ public:
 	bool MustMove(Piece& other);
 	void Drop(Piece& other);
 	bool CanRotateLeft(Piece& other);
+	bool CanRotateRight(Piece& other);
 	void RotateLeft();
+	void RotateRight();
 
 	void Increment(bool incX, bool incY, bool incZ);
 	void Move(int incCol, int incRow, bool isAdjustXandY = false, bool isAdjustAbsolute = false);
@@ -62,6 +64,7 @@ public:
 	}
 
 private:
+	void RemoveGaps();
 	int GetSmallestDistance(int wellRow, int pieceRowInWell, int currentDistanc);
 	int GetBottomRow();
 	void PushIntoVector(std::vector<float> &vector, PC &pc);

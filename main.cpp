@@ -129,7 +129,6 @@ int init_resources(void) {
 //	    22, 23, 20,
 //	  };
 
-
 	program = create_program("cube.v.glsl", "cube.f.glsl");
 	if (program == 0)
 		return 0;
@@ -210,7 +209,7 @@ void timerCallBack(int value) {
 
 				GenerateBuffers(*well, vbo_fixed, ibo_fixed);
 
-				translate_fixed = glm::translate(glm::mat4(1.0f), glm::vec3(well->X(), well->Y() + 14.0, well->Z()));
+				translate_fixed = glm::translate(glm::mat4(1.0f), glm::vec3(well->X() - 10, well->Y() + 14.0, well->Z()));
 
 				PickPiece();
 
@@ -229,7 +228,7 @@ void timerCallBack(int value) {
 	}
 
 	if (!isGameOver) {
-		translate = glm::translate(glm::mat4(1.0f), glm::vec3(cp->X(), cp->Y() + 14.0, cp->Z()));
+		translate = glm::translate(glm::mat4(1.0f), glm::vec3(cp->X() - 10, cp->Y() + 14.0, cp->Z()));
 
 		glm::mat4 view = glm::lookAt(glm::vec3(0.0, 0.0, -40.0),  // the position of your camera, in world space
 		glm::vec3(0.0, 0.0, 0.0),  // where you want to look at, in world space
@@ -438,55 +437,56 @@ int main(int argc, char* argv[]) {
 }
 
 void MakePieces() {
-	Piece t = Piece(3,3, 0.0, 0.0, 0.0);
+	Piece t = Piece(3, 3, 0.0, 0.0, 0.0);
 	t.Set(0, 0, true);
 	t.Set(1, 0, true);
 	t.Set(2, 0, true);
 	t.Set(1, 1, true);
 	t.Set(1, 2, true);
 
-	Piece i = Piece(3,3, 0.0, 0.0, 0.0);
+	Piece i = Piece(3, 3, 0.0, 0.0, 0.0);
 	i.Set(0, 0, true);
 	i.Set(0, 1, true);
 	i.Set(0, 2, true);
 
-	Piece l = Piece(3,3, 0.0, 0.0, 0.0);
+	Piece l = Piece(3, 3, 0.0, 0.0, 0.0);
 	l.Set(0, 0, true);
 	l.Set(0, 1, true);
 	l.Set(0, 2, true);
 	l.Set(1, 2, true);
 
-	Piece sqr = Piece(3,3, 0.0, 0.0, 0.0);
+	Piece sqr = Piece(2, 2, 0.0, 0.0, 0.0);
 	sqr.Set(0, 0, true);
 	sqr.Set(0, 1, true);
 	sqr.Set(1, 0, true);
 	sqr.Set(1, 1, true);
 
-	Piece zl = Piece(3,3, 0.0, 0.0, 0.0);
+	Piece zl = Piece(3, 3, 0.0, 0.0, 0.0);
 	zl.Set(0, 0, true);
 	zl.Set(0, 1, true);
 	zl.Set(1, 1, true);
 	zl.Set(2, 1, true);
 
-	Piece zr = Piece(3,3, 0.0, 0.0, 0.0);
+	Piece zr = Piece(3, 3, 0.0, 0.0, 0.0);
 	zr.Set(2, 0, true);
 	zr.Set(1, 0, true);
 	zr.Set(1, 1, true);
 	zr.Set(0, 1, true);
 
-//	pieces.push_back(t);
-//	pieces.push_back(i);
-//	pieces.push_back(l);
 	pieces.push_back(sqr);
-//	pieces.push_back(zl);
-//	pieces.push_back(zr);
+	pieces.push_back(t);
+	pieces.push_back(i);
+	pieces.push_back(l);
+	pieces.push_back(zl);
+	pieces.push_back(zr);
 
 	well = new Piece(10, 14, 0.0, 0.0, 0.0);
 }
 
-void PickPiece(){
+void PickPiece() {
 
-	int piece = rand()%pieces.size();
+	int piece = rand() % pieces.size();
 	cp = &(pieces[piece]);
+	cp->Reset();
 
 }

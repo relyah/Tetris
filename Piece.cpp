@@ -8,19 +8,10 @@
 #include "Piece.h"
 
 Piece::Piece(int maxCol, int maxRow, float x, float y, float z) {
-	incX = 0.0;
-	incY = -0.2;
-	incZ = 0.0;
-
-	this->x = x;
-	this->y = y;
-	this->z = z;
+	Reset(x, y, z);
 
 	this->maxRow = maxRow;
 	this->maxCol = maxCol;
-	top = 0;
-	left = 0;
-	sideLength = 2;
 
 	piece = PieceArray(maxCol);
 
@@ -41,6 +32,18 @@ Piece::Piece(int maxCol, int maxRow, float x, float y, float z) {
 
 Piece::~Piece() {
 
+}
+
+void Piece::Reset(float x, float y, float z) {
+	top = 0;
+	left = 0;
+	sideLength = 2;
+	this->x = x;
+	this->y = y;
+	this->z = z;
+	incX = 0.0;
+	incY = -0.2;
+	incZ = 0.0;
 }
 
 void Piece::Set(int col, int row, bool flag) {
@@ -233,7 +236,7 @@ bool Piece::CanRotateLeft(Piece& other) {
 				int newRow = other.maxCol - 1 - col;
 				int newCol = row;
 
-				if (piece[newCol + other.left][newRow + other.top])
+				if (!IsThereSpaceHere(newCol + other.left, newRow + other.top))
 					return false;
 			}
 		}
@@ -247,10 +250,10 @@ bool Piece::CanRotateRight(Piece& other) {
 	for (int row = 0; row < other.maxRow; row++) {
 		for (int col = 0; col < other.maxCol; col++) {
 			if (other.piece[col][row]) {
-				int newRow = col;
-				int newCol = other.maxCol - 1 - row;
+				int rotatedRow = col;
+				int rotatedCol = other.maxCol - 1 - row;
 
-				if (piece[newCol + other.left][newRow + other.top])
+				if (!IsThereSpaceHere(rotatedCol + other.left, rotatedRow + other.top))
 					return false;
 			}
 		}
@@ -258,6 +261,15 @@ bool Piece::CanRotateRight(Piece& other) {
 	}
 	return true;
 
+}
+
+bool Piece::IsThereSpaceHere(int col, int row) {
+	if (row < 0 || row >= maxRow)
+		return false;
+	if (col < 0 || col >= maxCol)
+		return false;
+
+	return !piece[col][row];
 }
 
 void Piece::RotateLeft() {

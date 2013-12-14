@@ -37,6 +37,8 @@ public:
 	Piece(int maxCol, int maxRow, float x, float y, float z);
 	virtual ~Piece();
 
+	void Reset(float x = 0.0, float y = 0.0, float z = 0.0);
+
 	void Set(int col, int row, bool flag);
 
 	void ConvertToCubes(std::vector<float> &cs, std::vector<unsigned short> &el);
@@ -54,7 +56,6 @@ public:
 	void Increment(bool incX, bool incY, bool incZ);
 	void Move(int incCol, int incRow, bool isAdjustXandY = false, bool isAdjustAbsolute = false);
 
-
 	float X() {
 		return x;
 	}
@@ -66,6 +67,7 @@ public:
 	}
 
 private:
+	bool IsThereSpaceHere(int col, int row);
 	void RemoveGaps();
 	void RemoveFullRows();
 	int GetSmallestDistance(int wellRow, int pieceRowInWell, int currentDistanc);

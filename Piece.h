@@ -38,12 +38,13 @@ public:
 
 	void ConvertToCubes(std::vector<float> &cs, std::vector<unsigned short> &el);
 
-	bool CanAdd(Piece other);
-	void Add(Piece other);
-	bool CanMove(Piece other, int incCol=0, int incRow=1);
-	bool MustMove(Piece other);
+	bool CanAdd(Piece& other);
+	void Add(Piece& other);
+	bool CanMove(Piece& other, int incCol = 0, int incRow = 1);
+	bool MustMove(Piece& other);
 	void Increment(bool incX, bool incY, bool incZ);
-	void Move(int incCol, int incRow, bool isAdjustXandY = false);
+	void Move(int incCol, int incRow, bool isAdjustXandY = false, bool isAdjustAbsolute = false);
+	void Drop(Piece& other);
 
 	float X() {
 		return x;
@@ -56,6 +57,7 @@ public:
 	}
 
 private:
+	int GetSmallestDistance(int wellRow, int pieceRowInWell, int currentDistanc);
 	int GetBottomRow();
 	void PushIntoVector(std::vector<float> &vector, PC &pc);
 	void MakeElements(std::vector<unsigned short> &el, int numElements, int cubeNum);

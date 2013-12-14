@@ -123,7 +123,7 @@ void Piece::ConvertToCubes(std::vector<float> &cs, std::vector<unsigned short> &
 
 }
 
-bool Piece::CanAdd(Piece other) {
+bool Piece::CanAdd(Piece& other) {
 	for (int c = 0; c < other.maxCol; c++) {
 		for (int r = 0; r < other.maxRow; r++) {
 			if (this->piece[other.left + c][other.top + r])
@@ -132,7 +132,7 @@ bool Piece::CanAdd(Piece other) {
 	}
 	return true;
 }
-void Piece::Add(Piece other) {
+void Piece::Add(Piece& other) {
 	for (int c = 0; c < other.maxCol; c++) {
 
 		for (int r = 0; r < other.maxRow; r++) {
@@ -150,7 +150,7 @@ void Piece::Increment(bool isIncX, bool isIncY, bool isIncZ) {
 	z += (isIncZ ? incZ : 0.0);
 }
 
-bool Piece::CanMove(Piece other, int incCol, int incRow) {
+bool Piece::CanMove(Piece& other, int incCol, int incRow) {
 
 	int otherMaxRowInWell = other.GetBottomRow() + other.top;
 	if (otherMaxRowInWell >= this->maxRow - 1)
@@ -173,19 +173,62 @@ bool Piece::CanMove(Piece other, int incCol, int incRow) {
 	return true;
 }
 
-bool Piece::MustMove(Piece other) {
+bool Piece::MustMove(Piece& other) {
 	float upperBound = -(float) (other.top * other.sideLength) - other.incY / 2.0;
 
 	return other.y <= upperBound;
 }
 
-void Piece::Move(int incCol, int incRow, bool isAdjustXandY) {
+void Piece::Move(int incCol, int incRow, bool isAdjustXandY, bool isAdjustAbsolute) {
 	top += incRow;
 	left += incCol;
 
 	if (isAdjustXandY) {
-		x += (float) (incCol * sideLength);
-		y += (float) (incRow * sideLength);
+		if (isAdjustAbsolute) {
+			x = (float)(left * sideLength);
+			y = (float)(-top * sideLength);
+		} else {
+			x += (float) (incCol * sideLength);
+			y += (float) (-incRow * sideLength);
+		}
+	}
+}
+
+void Piece::Drop(Piece& other) {
+
+	int dropDistance = maxRow;
+
+	for (int row = other.maxRow - 1; row >= 0; row--) {
+		for (int col = other.maxCol - 1; col >= 0; col--) {
+			if (other.piece[col][row]) {
+
+				int pieceRowInWell = row + other.top;
+
+				//get drop distance for empty well
+				dropDistance = GetSmallestDistance(this->maxRow - 1, pieceRowInWell, dropDistance);
+
+				//get drop distance when well contains pieces
+				for (int wellRow = this->maxRow - 1; wellRow >= 0; wellRow--) {
+					int wellCol = col + other.left;
+					//check for piece
+					if (this->piece[wellCol][wellRow]) {
+						dropDistance = GetSmallestDistance(wellRow, pieceRowInWell, dropDistance);
+					}
+				}
+			}
+
+		}
+	}
+
+	other.Move(0, dropDistance, true,true);
+}
+
+int Piece::GetSmallestDistance(int wellRow, int pieceRowInWell, int currentDistance) {
+	int newDD = wellRow - pieceRowInWell; //calculate distance
+	if (newDD < currentDistance) {
+		return newDD;
+	} else {
+		return currentDistance;
 	}
 }
 
@@ -208,42 +251,42 @@ void Piece::PushIntoVector(std::vector<float> &cs, PC &pc) {
 void Piece::MakeElements(std::vector<unsigned short> &el, int numElements, int cubeNum) {
 
 	int offset = numElements * cubeNum;
-	//front
+//front
 	el.push_back(0 + offset);
 	el.push_back(1 + offset);
 	el.push_back(2 + offset);
 	el.push_back(2 + offset);
 	el.push_back(3 + offset);
 	el.push_back(0 + offset);
-	//top
+//top
 	el.push_back(4 + offset);
 	el.push_back(5 + offset);
 	el.push_back(6 + offset);
 	el.push_back(6 + offset);
 	el.push_back(7 + offset);
 	el.push_back(4 + offset);
-	//back
+//back
 	el.push_back(8 + offset);
 	el.push_back(9 + offset);
 	el.push_back(10 + offset);
 	el.push_back(10 + offset);
 	el.push_back(11 + offset);
 	el.push_back(8 + offset);
-	//bottom
+//bottom
 	el.push_back(12 + offset);
 	el.push_back(13 + offset);
 	el.push_back(14 + offset);
 	el.push_back(14 + offset);
 	el.push_back(15 + offset);
 	el.push_back(12 + offset);
-	//left
+//left
 	el.push_back(16 + offset);
 	el.push_back(17 + offset);
 	el.push_back(18 + offset);
 	el.push_back(18 + offset);
 	el.push_back(19 + offset);
 	el.push_back(16 + offset);
-	//right
+//rightunsigned
 	el.push_back(20 + offset);
 	el.push_back(21 + offset);
 	el.push_back(22 + offset);

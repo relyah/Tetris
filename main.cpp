@@ -11,6 +11,8 @@
 #include "resTexture.cpp"
 #include "Piece.h"
 
+#define SPACEBAR 32
+
 struct attributes {
 	GLfloat coord3d[3];
 	GLfloat texture[2];
@@ -82,6 +84,7 @@ Piece well = Piece(10, 14, 0.0, 0.0, 0.0);
 glm::mat4 translate;
 glm::mat4 translate_fixed;
 int specialKey = -1;
+unsigned char key;
 
 int init_resources(void) {
 
@@ -226,7 +229,14 @@ void timerCallBack(int value) {
 		}
 		break;
 	}
-	specialKey=-1;
+	specialKey = -1;
+
+	switch (key) {
+	case SPACEBAR:
+		well.Drop(cp);
+		break;
+	}
+	key = -1;
 
 	if (well.MustMove(cp)) {
 		if (well.CanMove(cp)) {
@@ -401,7 +411,7 @@ void onReshape(int width, int height) {
 }
 
 void keyPressed(unsigned char key, int x, int y) {
-
+	::key = key;
 }
 
 void specialKeyPressed(int key, int x, int y) {

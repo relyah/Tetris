@@ -33,6 +33,8 @@ void InitWell();
 void MakePieces();
 void PickPiece();
 int PickRandomPiece();
+void LoadNextPiece();
+void Draw(glm::mat4 &translate, GLuint* vbo, GLuint* ibo, bool isWireFrame = false);
 
 struct attributes {
 	GLfloat coord3d[3];
@@ -102,14 +104,15 @@ glm::vec3 cameraLookAt;
 glm::vec3 cameraUp;
 glm::vec3 cameraRight;
 GLuint vs, fs;
-GLuint vbo_cube, vbo_fixed, vbo_grid; //vertex buffer object
-GLuint ibo_cube_elements, ibo_fixed; //index buffer object
+GLuint vbo_cube, vbo_fixed, vbo_grid, vbo_cube_next; //vertex buffer object
+GLuint ibo_cube_elements, ibo_fixed, ibo_cube_next; //index buffer object
 GLint attribute_coord3d, attribute_colour, attribute_normal;
 GLint uniform_m, uniform_v, uniform_p;
 int screen_width;
 int screen_height;
 glm::mat4 translate;
 glm::mat4 translate_fixed;
+glm::mat4 translate_next;
 int specialKey = -1;
 unsigned char key;
 int moveDelay = 0;
@@ -259,89 +262,72 @@ void onDisplay() {
 	glEnableVertexAttribArray(attribute_normal);
 	glEnableVertexAttribArray(attribute_colour);
 
-	glBindBuffer(GL_ARRAY_BUFFER, vbo_grid);
-
-	glVertexAttribPointer(attribute_coord3d, 3, //number of components per coordinate
-	GL_FLOAT,
-	GL_FALSE, sizeof(struct PC),  // stride
-	0);  // offset
-
-	glVertexAttribPointer(attribute_normal, 3, //number of components per normal
-	GL_FLOAT,
-	GL_FALSE, sizeof(struct PC),  // stride
-	(GLvoid*) offsetof(struct PC, normal));
-
-	glVertexAttribPointer(attribute_colour, 3, //number of components per colour
-	GL_FLOAT,
-	GL_FALSE, sizeof(struct PC),  // stride
-	(GLvoid*) offsetof(struct PC, colour));
-
-	int size = 0;
-	glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
-	glDrawArrays(GL_LINES, 0, size / sizeof(PC));
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	Draw(translate_fixed, &vbo_grid, 0);
 
 	if (!wellEmpty) {
 
-		glBindBuffer(GL_ARRAY_BUFFER, vbo_fixed);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_fixed);
+		Draw(translate_fixed, &vbo_fixed, &ibo_fixed);
 
-		glVertexAttribPointer(attribute_coord3d, 3,
-		GL_FLOAT,
-		GL_FALSE, sizeof(struct PC),  // stride
-		0);  // offset
-
-		glVertexAttribPointer(attribute_normal, 3,
-		GL_FLOAT,
-		GL_FALSE, sizeof(struct PC),  // stride
-		(GLvoid*) offsetof(struct PC, normal));
-
-		glVertexAttribPointer(attribute_colour, 3,
-		GL_FLOAT,
-		GL_FALSE, sizeof(struct PC),  // stride
-		(GLvoid*) offsetof(struct PC, colour));
-
-		int size = 0;
-		glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
-		glDrawElements(GL_TRIANGLES, size / sizeof(GLushort), GL_UNSIGNED_SHORT, 0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
 	if (!isGameOver) {
 
-		glUniformMatrix4fv(uniform_m, 1, GL_FALSE, glm::value_ptr(translate));
+		Draw(translate, &vbo_cube, &ibo_cube_elements, true);
+		//NEXT PIECE BROKEN Draw(translate_next, &vbo_cube_next, &ibo_cube_next);
 
-		glBindBuffer(GL_ARRAY_BUFFER, vbo_cube);
-
-		glVertexAttribPointer(attribute_coord3d, 3,
-		GL_FLOAT,
-		GL_FALSE, sizeof(struct PC),  // stride
-		0);  // offset
-
-		glVertexAttribPointer(attribute_normal, 3,
-		GL_FLOAT,
-		GL_FALSE, sizeof(struct PC),  // stride
-		(GLvoid*) offsetof(struct PC, normal));
-
-		glVertexAttribPointer(attribute_colour, 3,
-		GL_FLOAT,
-		GL_FALSE, sizeof(struct PC),  // stride
-		(GLvoid*) offsetof(struct PC, colour));
-
-		/* Push each element in buffer_vertices to the vertex shader */
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_cube_elements);
-		int size = 0;
-		glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
-		glDrawElements(GL_TRIANGLES, size / sizeof(GLushort), GL_UNSIGNED_SHORT, 0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 	/* Display the result */
 	glutSwapBuffers();
 
 	glDisableVertexAttribArray(attribute_coord3d);
 	glDisableVertexAttribArray(attribute_colour);
+}
+
+void Draw(glm::mat4 &translate, GLuint* vbo, GLuint* ibo, bool isWireFrame) {
+	if (isWireFrame) {
+		// Turn on wireframe mode
+		glPolygonMode(GL_FRONT, GL_LINE);
+		glPolygonMode(GL_BACK, GL_LINE);
+	}
+	glUniformMatrix4fv(uniform_m, 1, GL_FALSE, glm::value_ptr(translate));
+
+	glBindBuffer(GL_ARRAY_BUFFER, *vbo);
+
+	glVertexAttribPointer(attribute_coord3d, 3,
+	GL_FLOAT,
+	GL_FALSE, sizeof(struct PC),  // stride
+	0);  // offset
+
+	glVertexAttribPointer(attribute_normal, 3,
+	GL_FLOAT,
+	GL_FALSE, sizeof(struct PC),  // stride
+	(GLvoid*) offsetof(struct PC, normal));
+
+	glVertexAttribPointer(attribute_colour, 3,
+	GL_FLOAT,
+	GL_FALSE, sizeof(struct PC),  // stride
+	(GLvoid*) offsetof(struct PC, colour));
+
+	/* Push each element in buffer_vertices to the vertex shader */
+	if (ibo == 0) {
+		int size = 0;
+		glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
+		glDrawArrays(GL_LINES, 0, size / sizeof(PC));
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	} else {
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *ibo);
+		int size = 0;
+		glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
+		glDrawElements(GL_TRIANGLES, size / sizeof(GLushort), GL_UNSIGNED_SHORT, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
+
+	if (isWireFrame) {
+		// Turn off wireframe mode
+		glPolygonMode(GL_FRONT, GL_FILL);
+		glPolygonMode(GL_BACK, GL_FILL);
+	}
 }
 
 void free_resources() {
@@ -400,7 +386,23 @@ void specialKeyPressed(int key, int x, int y) {
 	specialKey = key;
 }
 
+void onMouseWheel(int button, int dir, int x, int y) {
+	if (dir > 0) {
+		// Zoom in
+		cameraPosition.z += 1.0;
+	} else {
+		// Zoom out
+		cameraPosition.z -= 1.0;
+	}
+
+	GenerateCameraView();
+}
+
 void onMouse(int button, int state, int x, int y) {
+	if (button == 3)
+		onMouseWheel(button, 1, x, y);
+	if (button == 4)
+		onMouseWheel(button, -1, x, y);
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 
 		isCameraRotate = true;
@@ -487,6 +489,7 @@ int main(int argc, char* argv[]) {
 		glutSpecialFunc(specialKeyPressed);
 		glutMouseFunc(onMouse);
 		glutMotionFunc(onMotion);
+		glutMouseWheelFunc(onMouseWheel);
 
 		glEnable(GL_BLEND);
 		glEnable(GL_DEPTH_TEST);
@@ -506,7 +509,6 @@ void InitWell() {
 	MakePieces();
 	nextPiece = PickRandomPiece();
 	PickPiece();
-
 
 	std::vector<float> grid;
 	well->MakeGrid(grid);
@@ -563,15 +565,26 @@ void MakePieces() {
 
 void PickPiece() {
 	cp = &(pieces[nextPiece]);
-	nextPiece= PickRandomPiece();;
+	nextPiece = PickRandomPiece();
+
+	LoadNextPiece();
+
 	cp->Reset();
 	cp->Move(4, 0, true);
 }
 
-int PickRandomPiece()
-{
+int PickRandomPiece() {
 	int piece = rand() % pieces.size();
 	return piece;
+}
+
+void LoadNextPiece() {
+	Piece np = pieces[nextPiece];
+
+	GenerateBuffers(np, vbo_cube_next, ibo_cube_next);
+
+	translate_next = glm::translate(glm::mat4(1.0f), glm::vec3(np.getX() - 5, np.getY() - 1, np.getZ()));
+
 }
 
 int InitProgram() {

@@ -10,6 +10,8 @@
 
 #include <vector>
 
+#define TETRIS_SIDE_LENGTH 2
+
 typedef std::vector<bool> PieceRowArray;
 typedef std::vector<PieceRowArray> PieceArray;
 

@@ -67,9 +67,10 @@ protected:
 
 	virtual void CreateContainer()=0;
 	int GetSmallestDistance(int wellRow, int pieceRowInWell, int currentDistanc);
+	void PushIntoVector(std::vector<float> &vector, PC &pc, float *normal, float* colour);
 
 private:
-	void PushIntoVector(std::vector<float> &vector, PC &pc, float *normal, float* colour);
+
 	void MakeElements(std::vector<unsigned short> &el, int numElements, int cubeNum);
 
 };

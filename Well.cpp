@@ -7,8 +7,8 @@
 
 #include "Well.h"
 
-Well::Well(int maxCol, int maxRow, float x, float y, float z) : AbstractPiece(x,y,z)
-{
+Well::Well(int maxCol, int maxRow, float x, float y, float z) :
+		AbstractPiece(x, y, z) {
 
 	this->maxRow = maxRow;
 	this->maxCol = maxCol;
@@ -16,16 +16,15 @@ Well::Well(int maxCol, int maxRow, float x, float y, float z) : AbstractPiece(x,
 	CreateContainer();
 }
 
-void Well::CreateContainer()
-{
+void Well::CreateContainer() {
 	container = PieceArray(maxCol);
 
-		for (int c = 0; c < maxCol; c++) {
-			container[c] = PieceRowArray(maxRow);
-			for (int r = 0; r < maxRow; r++) {
-				container[c][r] = false;
-			}
+	for (int c = 0; c < maxCol; c++) {
+		container[c] = PieceRowArray(maxRow);
+		for (int r = 0; r < maxRow; r++) {
+			container[c][r] = false;
 		}
+	}
 }
 
 bool Well::CanAdd(Piece& other) {
@@ -138,7 +137,6 @@ bool Well::CanRotateRight(Piece& other) {
 
 }
 
-
 bool Well::IsThereSpaceHere(int col, int row) {
 	if (row < 0 || row >= maxRow)
 		return false;
@@ -148,5 +146,39 @@ bool Well::IsThereSpaceHere(int col, int row) {
 	return !container[col][row];
 }
 
+void Well::MakeGrid(std::vector<float> &cs) {
+	cs.clear();
 
+	float z = 1.1;
+
+	for (int row = 0; row <= maxRow; row++) {
+
+		float xStart = 0.0;
+		float y = -(float) (row * sideLength);
+
+		float xEnd = -(float) (maxCol * sideLength);
+
+		PC start = { xStart, y, z };
+		PC end = { xEnd, y, z };
+
+		PushIntoVector(cs, start, new float[3] { 0.0, 0.0, -1.0 }, new float[3] { 1.0, 1.0, 0.0 });
+		PushIntoVector(cs, end, new float[3] { 0.0, 0.0, -1.0 }, new float[3] { 1.0, 1.0, 0.0 });
+
+	}
+
+	for (int col = 0; col <= maxCol; col++) {
+
+		float yStart = 0.0;
+		float x = -(float) (col * sideLength);
+
+		float yEnd = -(float) (maxRow * sideLength);
+
+		PC start = { x, yStart, z };
+		PC end = { x, yEnd, z };
+
+		PushIntoVector(cs, start, new float[3] { 0.0, 0.0, -1.0 }, new float[3] { 1.0, 0.0, 1.0 });
+		PushIntoVector(cs, end, new float[3] { 0.0, 0.0, -1.0 }, new float[3] { 1.0, 0.0, 1.0 });
+
+	}
+}
 

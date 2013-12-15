@@ -19,6 +19,9 @@
 #define ROTATE_RIGHT 83 //capital S
 
 void GenerateBuffers(AbstractPiece& p, GLuint& vbo, GLuint& ibo);
+void GenerateArrayBuffer(std::vector<float>& vertices, GLuint& vbo);
+void GenerateElementBuffer(std::vector<unsigned short>& elements, GLuint& ibo);
+void InitWell();
 void MakePieces();
 void PickPiece();
 
@@ -82,7 +85,7 @@ GLint uniformMytexture;
 bool wellEmpty = true;
 bool isGameOver = false;
 GLuint vs, fs;
-GLuint vbo_cube, vbo_fixed; //vertex buffer object
+GLuint vbo_cube, vbo_fixed, vbo_grid; //vertex buffer object
 GLuint ibo_cube_elements, ibo_fixed; //index buffer object
 GLint attribute_coord3d, attribute_colour, attribute_normal;
 GLint uniform_m, uniform_v, uniform_p;
@@ -100,8 +103,7 @@ Piece* cp = 0;
 
 int init_resources(void) {
 
-	MakePieces();
-	PickPiece();
+	InitWell();
 
 	GenerateBuffers(*cp, vbo_cube, ibo_cube_elements);
 
@@ -162,15 +164,18 @@ int init_resources(void) {
 
 void timerCallBack(int value) {
 
+	int incX = 0;
 	switch (specialKey) {
 	case GLUT_KEY_LEFT:
-		if (well->CanMove(*cp, 1, 0)) {
-			cp->Move(1, 0, true);
+		incX = -1;
+		if (well->CanMove(*cp, incX, 0)) {
+			cp->Move(incX, 0, true);
 		}
 		break;
 	case GLUT_KEY_RIGHT:
-		if (well->CanMove(*cp, -1, 0)) {
-			cp->Move(-1, 0, true);
+		incX = 1;
+		if (well->CanMove(*cp, incX, 0)) {
+			cp->Move(incX, 0, true);
 		}
 		break;
 	}
@@ -210,8 +215,6 @@ void timerCallBack(int value) {
 
 				GenerateBuffers(*well, vbo_fixed, ibo_fixed);
 
-				translate_fixed = glm::translate(glm::mat4(1.0f), glm::vec3(well->getX() - 10, well->getY() + 14.0, well->getZ()));
-
 				PickPiece();
 
 				if (well->CanAdd(*cp)) {
@@ -229,10 +232,10 @@ void timerCallBack(int value) {
 	}
 
 	if (!isGameOver) {
-		translate = glm::translate(glm::mat4(1.0f), glm::vec3(cp->getX() - 10, cp->getY() + 14.0, cp->getZ()));
+		translate = glm::translate(glm::mat4(1.0f), glm::vec3(cp->getX(), cp->getY(), cp->getZ()));
 
-		glm::mat4 view = glm::lookAt(glm::vec3(0.0, 0.0, -40.0),  // the position of your camera, in world space
-		glm::vec3(0.0, 0.0, 0.0),  // where you want to look at, in world space
+		glm::mat4 view = glm::lookAt(glm::vec3(-5.0, -14.0, -40.0),  // the position of your camera, in world space
+		glm::vec3(-5.0, -14.0, 0.0),  // where you want to look at, in world space
 		glm::vec3(0.0, 1.0, 0.0)); //up direction; probably glm::vec3(0,1,0), but (0,-1,0) would make you looking upside-down, which can be great too
 
 		glm::mat4 projection = glm::perspective(45.0f, 1.0f * screen_width / screen_height, 0.1f, 100.0f);
@@ -251,20 +254,29 @@ void GenerateBuffers(AbstractPiece& p, GLuint& vbo, GLuint& ibo) {
 	std::vector<unsigned short> el;
 	p.ConvertToCubes(cs, el);
 
+	GenerateArrayBuffer(cs, vbo);
+	GenerateElementBuffer(el, ibo);
+}
+
+void GenerateArrayBuffer(std::vector<float>& vertices, GLuint& vbo) {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	glDeleteBuffers(1, &vbo);
-	glDeleteBuffers(1, &ibo);
 
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, cs.size() * sizeof(float), &cs[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices[0], GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void GenerateElementBuffer(std::vector<unsigned short>& elements, GLuint& ibo) {
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	glDeleteBuffers(1, &ibo);
 
 	glGenBuffers(1, &ibo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, el.size() * sizeof(unsigned short), &el[0], GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements.size() * sizeof(unsigned short), &elements[0], GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
@@ -275,35 +287,63 @@ void onDisplay() {
 
 	glUseProgram(program);
 
+	translate_fixed = glm::translate(glm::mat4(1.0f), glm::vec3(well->getX(), well->getY(), well->getZ()));
+
 	glEnableVertexAttribArray(attribute_coord3d);
 	glEnableVertexAttribArray(attribute_normal);
 	glEnableVertexAttribArray(attribute_colour);
 
+	glUniformMatrix4fv(uniform_m, 1, GL_FALSE, glm::value_ptr(translate_fixed));
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_grid);
+
+	glVertexAttribPointer(attribute_coord3d,
+			3, //number of components per coordinate
+	GL_FLOAT,
+	GL_FALSE, sizeof(struct PC),  // stride
+	0);  // offset
+
+	glVertexAttribPointer(attribute_normal,
+			3, //number of components per normal
+	GL_FLOAT,
+	GL_FALSE, sizeof(struct PC),  // stride
+	(GLvoid*) offsetof(struct PC, normal));
+
+	glVertexAttribPointer(attribute_colour,
+			3, //number of components per colour
+	GL_FLOAT,
+	GL_FALSE, sizeof(struct PC),  // stride
+	(GLvoid*) offsetof(struct PC, colour));
+
+	int size = 0;
+	glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
+	glDrawArrays(GL_LINES, 0, size / sizeof(PC));
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
 	if (!wellEmpty) {
-		glUniformMatrix4fv(uniform_m, 1, GL_FALSE, glm::value_ptr(translate_fixed));
-		glBindBuffer(GL_ARRAY_BUFFER, vbo_fixed);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_fixed);
-
-		glVertexAttribPointer(attribute_coord3d, 3,
-		GL_FLOAT,
-		GL_FALSE, sizeof(struct PC),  // stride
-		0);  // offset
-
-		glVertexAttribPointer(attribute_normal, 3,
-		GL_FLOAT,
-		GL_FALSE, sizeof(struct PC),  // stride
-		(GLvoid*) offsetof(struct PC, normal));
-
-		glVertexAttribPointer(attribute_colour, 3,
-		GL_FLOAT,
-		GL_FALSE, sizeof(struct PC),  // stride
-		(GLvoid*) offsetof(struct PC, colour));
-
-		int size = 0;
-		glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
-		glDrawElements(GL_TRIANGLES, size / sizeof(GLushort), GL_UNSIGNED_SHORT, 0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+//		glUniformMatrix4fv(uniform_m, 1, GL_FALSE, glm::value_ptr(translate_fixed));
+//		glBindBuffer(GL_ARRAY_BUFFER, vbo_fixed);
+//		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_fixed);
+//
+//		glVertexAttribPointer(attribute_coord3d, 3,
+//		GL_FLOAT,
+//		GL_FALSE, sizeof(struct PC),  // stride
+//		0);  // offset
+//
+//		glVertexAttribPointer(attribute_normal, 3,
+//		GL_FLOAT,
+//		GL_FALSE, sizeof(struct PC),  // stride
+//		(GLvoid*) offsetof(struct PC, normal));
+//
+//		glVertexAttribPointer(attribute_colour, 3,
+//		GL_FLOAT,
+//		GL_FALSE, sizeof(struct PC),  // stride
+//		(GLvoid*) offsetof(struct PC, colour));
+//
+//		int size = 0;
+//		glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
+//		glDrawElements(GL_TRIANGLES, size / sizeof(GLushort), GL_UNSIGNED_SHORT, 0);
+//		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+//		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 	glVertexAttribPointer(attribute_normal, 3,
 	GL_FLOAT,
@@ -316,36 +356,32 @@ void onDisplay() {
 	(GLvoid*) offsetof(struct PC, colour));
 
 	if (!isGameOver) {
-		glUniformMatrix4fv(uniform_m, 1, GL_FALSE, glm::value_ptr(translate));
-
-		glBindBuffer(GL_ARRAY_BUFFER, vbo_cube);
-
-		glVertexAttribPointer(attribute_coord3d, 3,
-		GL_FLOAT,
-		GL_FALSE, sizeof(struct PC),  // stride
-		0);  // offset
-
-		glVertexAttribPointer(attribute_normal, 3,
-		GL_FLOAT,
-		GL_FALSE, sizeof(struct PC),  // stride
-		(GLvoid*) offsetof(struct PC, normal));
-
-		glVertexAttribPointer(attribute_colour, 3,
-		GL_FLOAT,
-		GL_FALSE, sizeof(struct PC),  // stride
-		(GLvoid*) offsetof(struct PC, colour));
-
-//	glActiveTexture(GL_TEXTURE0);
-//	glBindTexture(GL_TEXTURE_2D, textureId);
-//	glUniform1i(uniform_mytexture, /*GL_TEXTURE*/0);
-
-		/* Push each element in buffer_vertices to the vertex shader */
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_cube_elements);
-		int size = 0;
-		glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
-		glDrawElements(GL_TRIANGLES, size / sizeof(GLushort), GL_UNSIGNED_SHORT, 0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+//		glUniformMatrix4fv(uniform_m, 1, GL_FALSE, glm::value_ptr(translate));
+//
+//		glBindBuffer(GL_ARRAY_BUFFER, vbo_cube);
+//
+//		glVertexAttribPointer(attribute_coord3d, 3,
+//		GL_FLOAT,
+//		GL_FALSE, sizeof(struct PC),  // stride
+//		0);  // offset
+//
+//		glVertexAttribPointer(attribute_normal, 3,
+//		GL_FLOAT,
+//		GL_FALSE, sizeof(struct PC),  // stride
+//		(GLvoid*) offsetof(struct PC, normal));
+//
+//		glVertexAttribPointer(attribute_colour, 3,
+//		GL_FLOAT,
+//		GL_FALSE, sizeof(struct PC),  // stride
+//		(GLvoid*) offsetof(struct PC, colour));
+//
+//		/* Push each element in buffer_vertices to the vertex shader */
+//		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_cube_elements);
+//		int size = 0;
+//		glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
+//		glDrawElements(GL_TRIANGLES, size / sizeof(GLushort), GL_UNSIGNED_SHORT, 0);
+//		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+//		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 	/* Display the result */
 	glutSwapBuffers();
@@ -367,6 +403,7 @@ void free_resources() {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glDeleteBuffers(1, &vbo_cube);
 	glDeleteBuffers(1, &ibo_cube_elements);
+	glDeleteBuffers(1, &vbo_grid);
 
 	if (vbo_fixed != 0) {
 		glDeleteBuffers(1, &vbo_fixed);
@@ -437,6 +474,15 @@ int main(int argc, char* argv[]) {
 	return EXIT_SUCCESS;
 }
 
+void InitWell() {
+	MakePieces();
+	PickPiece();
+
+	std::vector<float> grid;
+	well->MakeGrid(grid);
+	GenerateArrayBuffer(grid, vbo_grid);
+}
+
 void MakePieces() {
 	Piece t = Piece(3, 0.0, 0.0, 0.0);
 	t.Set(0, 0, true);
@@ -489,5 +535,6 @@ void PickPiece() {
 	int piece = rand() % pieces.size();
 	cp = &(pieces[piece]);
 	cp->Reset();
+	cp->Move(0, 0, true);
 
 }

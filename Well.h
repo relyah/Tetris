@@ -23,6 +23,8 @@ public:
 	bool CanRotateLeft(Piece& other);
 	bool CanRotateRight(Piece& other);
 
+	void MakeGrid(std::vector<float> &cs);
+
 protected:
 	virtual void CreateContainer();
 

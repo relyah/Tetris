@@ -104,20 +104,21 @@ GLuint create_shader(const char* filename, GLenum type) {
 	}
 	return res;
 }
-GLuint create_program(const char *vertexfile, const char *fragmentfile) {
+GLuint create_program(const char *vertexfile, const char *fragmentfile, GLuint &vshader, GLuint &fshader) {
 	GLuint program = glCreateProgram();
-	GLuint shader;
+	//GLuint vshader;
 	if (vertexfile) {
-		shader = create_shader(vertexfile, GL_VERTEX_SHADER);
-		if (!shader)
+		vshader = create_shader(vertexfile, GL_VERTEX_SHADER);
+		if (!vshader)
 			return 0;
-		glAttachShader(program, shader);
+		glAttachShader(program, vshader);
 	}
+	//GLuint fshader;
 	if (fragmentfile) {
-		shader = create_shader(fragmentfile, GL_FRAGMENT_SHADER);
-		if (!shader)
+		fshader = create_shader(fragmentfile, GL_FRAGMENT_SHADER);
+		if (!fshader)
 			return 0;
-		glAttachShader(program, shader);
+		glAttachShader(program, fshader);
 	}
 	glLinkProgram(program);
 	GLint link_ok = GL_FALSE;

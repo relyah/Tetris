@@ -390,13 +390,11 @@ void onMouseWheel(int button, int dir, int x, int y) {
 	float zoomFactor = 0.0;
 	if (dir > 0) {
 		// Zoom in
-		//cameraPosition.z += 1.0;
-		zoomFactor = 0.1;
+		zoomFactor = 0.5;
 
 	} else {
 		// Zoom out
-		//cameraPosition.z -= 1.0;
-		zoomFactor = -0.1;
+		zoomFactor = -0.5;
 	}
 
 	cameraPosition = cameraPosition +  zoomFactor * glm::normalize(cameraPosition - cameraLookAt);
@@ -535,11 +533,17 @@ void MakePieces() {
 	i.Set(0, 1, true);
 	i.Set(0, 2, true);
 
-	Piece l = Piece(3, 0.0, 0.0, 0.0);
-	l.Set(0, 0, true);
-	l.Set(0, 1, true);
-	l.Set(0, 2, true);
-	l.Set(1, 2, true);
+	Piece lr = Piece(3, 0.0, 0.0, 0.0);
+	lr.Set(0, 0, true);
+	lr.Set(0, 1, true);
+	lr.Set(0, 2, true);
+	lr.Set(1, 2, true);
+
+	Piece ll = Piece(3, 0.0, 0.0, 0.0);
+	ll.Set(1, 0, true);
+	ll.Set(1, 1, true);
+	ll.Set(1, 2, true);
+	ll.Set(0, 2, true);
 
 	Piece sqr = Piece(2, 0.0, 0.0, 0.0);
 	sqr.Set(0, 0, true);
@@ -562,7 +566,8 @@ void MakePieces() {
 	pieces.push_back(sqr);
 	pieces.push_back(t);
 	pieces.push_back(i);
-	pieces.push_back(l);
+	pieces.push_back(lr);
+	pieces.push_back(ll);
 	pieces.push_back(zl);
 	pieces.push_back(zr);
 
@@ -594,7 +599,7 @@ void LoadNextPiece() {
 }
 
 int InitProgram() {
-	program = create_program("cube.v.glsl", "cube.f.glsl");
+	program = create_program("cube.v.glsl", "cube.f.glsl",vs,fs);
 	if (program == 0)
 		return 0;
 	attribute_coord3d = get_attrib(program, "vertex_position");

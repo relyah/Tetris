@@ -32,6 +32,7 @@ void GenerateElementBuffer(std::vector<unsigned short>& elements, GLuint& ibo);
 void InitWell();
 void MakePieces();
 void PickPiece();
+int PickRandomPiece();
 
 struct attributes {
 	GLfloat coord3d[3];
@@ -118,6 +119,7 @@ int prevxPos;
 int prevyPos;
 
 std::vector<Piece> pieces;
+int nextPiece;
 Well* well = 0;
 Piece* cp = 0;
 
@@ -502,7 +504,9 @@ int main(int argc, char* argv[]) {
 
 void InitWell() {
 	MakePieces();
+	nextPiece = PickRandomPiece();
 	PickPiece();
+
 
 	std::vector<float> grid;
 	well->MakeGrid(grid);
@@ -558,12 +562,16 @@ void MakePieces() {
 }
 
 void PickPiece() {
-
-	int piece = rand() % pieces.size();
-	cp = &(pieces[piece]);
+	cp = &(pieces[nextPiece]);
+	nextPiece= PickRandomPiece();;
 	cp->Reset();
-	cp->Move(0, 0, true);
+	cp->Move(4, 0, true);
+}
 
+int PickRandomPiece()
+{
+	int piece = rand() % pieces.size();
+	return piece;
 }
 
 int InitProgram() {

@@ -18,6 +18,8 @@
 #define ROTATE_LEFT 65 //capital A
 #define ROTATE_RIGHT 83 //capital S
 
+int InitProgram();
+void InitCamera();
 void GenerateBuffers(AbstractPiece& p, GLuint& vbo, GLuint& ibo);
 void GenerateArrayBuffer(std::vector<float>& vertices, GLuint& vbo);
 void GenerateElementBuffer(std::vector<unsigned short>& elements, GLuint& ibo);
@@ -84,6 +86,11 @@ GLuint textureId;
 GLint uniformMytexture;
 bool wellEmpty = true;
 bool isGameOver = false;
+bool isCameraRotate = false;
+glm::vec3 cameraPosition;
+glm::vec3 cameraLookAt;
+glm::vec3 cameraUp;
+glm::vec3 cameraRight;
 GLuint vs, fs;
 GLuint vbo_cube, vbo_fixed, vbo_grid; //vertex buffer object
 GLuint ibo_cube_elements, ibo_fixed; //index buffer object
@@ -96,6 +103,10 @@ glm::mat4 translate_fixed;
 int specialKey = -1;
 unsigned char key;
 int moveDelay = 0;
+float yAngle;
+float xAngle;
+int prevxPos;
+int prevyPos;
 
 std::vector<Piece> pieces;
 Well* well = 0;
@@ -103,61 +114,10 @@ Piece* cp = 0;
 
 int init_resources(void) {
 
+	InitProgram();
+	InitCamera();
+
 	InitWell();
-
-	GenerateBuffers(*cp, vbo_cube, ibo_cube_elements);
-
-//	GLushort cube_elements[] = {
-//	// front
-//			0, 1, 2 };
-
-//	 GLushort cube_elements[] = {
-//	    // front
-//	     0,  1,  2,
-//	     2,  3,  0,
-//	    // top
-//	     4,  5,  6,
-//	     6,  7,  4,
-//	    // back
-//	     8,  9, 10,
-//	    10, 11,  8,
-//	    // bottom
-//	    12, 13, 14,
-//	    14, 15, 12,
-//	    // left
-//	    16, 17, 18,
-//	    18, 19, 16,
-//	    // right
-//	    20, 21, 22,
-//	    22, 23, 20,
-//	  };
-
-	program = create_program("cube.v.glsl", "cube.f.glsl");
-	if (program == 0)
-		return 0;
-	attribute_coord3d = get_attrib(program, "vertex_position");
-	attribute_normal = get_attrib(program, "vertex_normal");
-	attribute_colour = get_attrib(program, "vertex_colour");
-
-	uniform_m = get_uniform(program, "model");
-	uniform_v = get_uniform(program, "view");
-	uniform_p = get_uniform(program, "projection");
-
-//	glGenTextures(1, &textureId);
-//	glBindTexture(GL_TEXTURE_2D, textureId);
-//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//	glTexImage2D(GL_TEXTURE_2D, // target
-//	0,  // level, 0 = base, no minimap,
-//	GL_RGB, // internalformat
-//	res_texture.width,  // width
-//	res_texture.height,  // height
-//	0,  // border, always 0 in OpenGL ES
-//	GL_RGB,  // format
-//	GL_UNSIGNED_BYTE, // type
-//	res_texture.pixel_data);
-
-//	uniform_name = "mytexture";
-//	uniform_mytexture = glGetUniformLocation(program, "uniform_name");
 
 	return 1;
 }
@@ -234,9 +194,7 @@ void timerCallBack(int value) {
 	if (!isGameOver) {
 		translate = glm::translate(glm::mat4(1.0f), glm::vec3(cp->getX(), cp->getY(), cp->getZ()));
 
-		glm::mat4 view = glm::lookAt(glm::vec3(-5.0, -14.0, -40.0),  // the position of your camera, in world space
-		glm::vec3(-5.0, -14.0, 0.0),  // where you want to look at, in world space
-		glm::vec3(0.0, 1.0, 0.0)); //up direction; probably glm::vec3(0,1,0), but (0,-1,0) would make you looking upside-down, which can be great too
+		glm::mat4 view = glm::lookAt(cameraPosition, cameraLookAt, cameraUp);
 
 		glm::mat4 projection = glm::perspective(45.0f, 1.0f * screen_width / screen_height, 0.1f, 100.0f);
 
@@ -296,20 +254,17 @@ void onDisplay() {
 	glUniformMatrix4fv(uniform_m, 1, GL_FALSE, glm::value_ptr(translate_fixed));
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_grid);
 
-	glVertexAttribPointer(attribute_coord3d,
-			3, //number of components per coordinate
+	glVertexAttribPointer(attribute_coord3d, 3, //number of components per coordinate
 	GL_FLOAT,
 	GL_FALSE, sizeof(struct PC),  // stride
 	0);  // offset
 
-	glVertexAttribPointer(attribute_normal,
-			3, //number of components per normal
+	glVertexAttribPointer(attribute_normal, 3, //number of components per normal
 	GL_FLOAT,
 	GL_FALSE, sizeof(struct PC),  // stride
 	(GLvoid*) offsetof(struct PC, normal));
 
-	glVertexAttribPointer(attribute_colour,
-			3, //number of components per colour
+	glVertexAttribPointer(attribute_colour, 3, //number of components per colour
 	GL_FLOAT,
 	GL_FALSE, sizeof(struct PC),  // stride
 	(GLvoid*) offsetof(struct PC, colour));
@@ -430,6 +385,61 @@ void specialKeyPressed(int key, int x, int y) {
 	specialKey = key;
 }
 
+void onMouse(int button, int state, int x, int y) {
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+
+		isCameraRotate = true;
+
+		prevxPos = x;
+		prevyPos = y;
+
+	} else if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
+		isCameraRotate = false;
+	}
+}
+
+void onMotion(int x, int y) {
+	if (isCameraRotate) {  // if left button is pressed
+
+		int xPos = x;
+		int yPos = y;
+
+		//yaw
+		int delta = xPos - prevxPos;
+		yAngle += (float) delta * 0.1f;
+//		D3DXMATRIX rotation;
+//		D3DXMatrixRotationAxis(&rotation, &cameraUp, D3DXToRadian((float) delta));
+//		D3DXVec3TransformNormal(&right, &right, &rotation);
+//		D3DXVec3TransformNormal(&cameraPosition, &cameraPosition, &rotation);
+
+		glm::mat4 rotate = glm::mat4(1.0f);
+		rotate = glm::rotate(rotate, yAngle, cameraUp);
+		cameraRight = glm::vec3(glm::normalize(rotate * glm::vec4(cameraRight, 0.0)));
+		cameraPosition = glm::vec3(rotate * glm::vec4(cameraPosition, 0.0));
+
+		//pitch
+		delta = prevyPos - yPos;
+		xAngle += (float) delta * 0.1f;
+//
+//    D3DXMatrixRotationAxis(&rotation, &right, D3DXToRadian((float)delta));
+//              D3DXVec3TransformNormal(&cameraUp, &cameraUp, &rotation);
+//              D3DXVec3TransformNormal(&cameraPosition, &cameraPosition, &rotation);
+		rotate = glm::mat4(1.0f);
+		rotate = glm::rotate(rotate, xAngle, cameraRight);
+		cameraUp = glm::vec3(glm::normalize(rotate * glm::vec4(cameraUp, 0.0)));
+		cameraPosition = glm::vec3(rotate * glm::vec4(cameraPosition, 0.0));
+
+		prevxPos = xPos;
+		prevyPos = yPos;
+
+		if (yAngle >= 360.0f)
+			yAngle -= 360.0f;
+		if (yAngle <= 0.0f)
+			yAngle += 360.0f;
+
+	}
+}
+
 int main(int argc, char* argv[]) {
 	/* Glut-related initialising functions */
 	glutInit(&argc, argv);
@@ -458,8 +468,12 @@ int main(int argc, char* argv[]) {
 
 		glutDisplayFunc(onDisplay);
 		glutReshapeFunc(onReshape);
+
 		glutKeyboardFunc(keyPressed);
 		glutSpecialFunc(specialKeyPressed);
+		glutMouseFunc(onMouse);
+		glutMotionFunc(onMotion);
+
 		glEnable(GL_BLEND);
 		glEnable(GL_DEPTH_TEST);
 		glutTimerFunc(0, timerCallBack, 0);
@@ -481,6 +495,7 @@ void InitWell() {
 	std::vector<float> grid;
 	well->MakeGrid(grid);
 	GenerateArrayBuffer(grid, vbo_grid);
+	GenerateBuffers(*cp, vbo_cube, ibo_cube_elements);
 }
 
 void MakePieces() {
@@ -536,5 +551,32 @@ void PickPiece() {
 	cp = &(pieces[piece]);
 	cp->Reset();
 	cp->Move(0, 0, true);
+
+}
+
+int InitProgram() {
+	program = create_program("cube.v.glsl", "cube.f.glsl");
+	if (program == 0)
+		return 0;
+	attribute_coord3d = get_attrib(program, "vertex_position");
+	attribute_normal = get_attrib(program, "vertex_normal");
+	attribute_colour = get_attrib(program, "vertex_colour");
+
+	uniform_m = get_uniform(program, "model");
+	uniform_v = get_uniform(program, "view");
+	uniform_p = get_uniform(program, "projection");
+	return 1;
+}
+
+void InitCamera() {
+	cameraPosition = glm::vec3(-5.0, -14.0, -40.0);  // the position of your camera, in world space
+	cameraLookAt = glm::vec3(-5.0, -14.0, 0.0);  // where you want to look at, in world space
+	cameraUp = glm::vec3(0.0, 1.0, 0.0); //up direction; probably glm::vec3(0,1,0), but (0,-1,0) would make you looking upside-down, which can be great too
+	cameraRight = glm::vec3(1.0, 0.0, 0.0);
+
+	yAngle = 0.0f;
+	xAngle = 0.0f;
+	prevxPos=0;
+	prevyPos=0;
 
 }

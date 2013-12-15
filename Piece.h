@@ -9,71 +9,38 @@
 #define PIECE_H_
 
 #include <stdlib.h>
-#include <vector>
 #include <math.h>
 
-typedef std::vector<bool> PieceRowArray;
-typedef std::vector<PieceRowArray> PieceArray;
+#include "AbstractPiece.h"
 
-struct PC {
-	float x;
-	float y;
-	float z;
-	float normal[3];
-	float colour[3];
-};
-
-class Piece {
-
-	float x, y, z;
-	float incX, incY, incZ;
-	int maxCol, maxRow;
-	int left;
-	int top;
-	int sideLength;
-	PieceArray piece;
+class Piece : public AbstractPiece {
 
 public:
-	Piece(int maxCol, int maxRow, float x, float y, float z);
+	Piece(int size, float x, float y, float z);
 	virtual ~Piece();
-
-	void Reset(float x = 0.0, float y = 0.0, float z = 0.0);
 
 	void Set(int col, int row, bool flag);
 
-	void ConvertToCubes(std::vector<float> &cs, std::vector<unsigned short> &el);
+	bool MustMove();
 
-	bool CanAdd(Piece& other);
-	void Add(Piece& other);
-	bool CanMove(Piece& other, int incCol = 0, int incRow = 1);
-	bool MustMove(Piece& other);
-	void Drop(Piece& other);
-	bool CanRotateLeft(Piece& other);
-	bool CanRotateRight(Piece& other);
 	void RotateLeft();
 	void RotateRight();
 
 	void Increment(bool incX, bool incY, bool incZ);
 	void Move(int incCol, int incRow, bool isAdjustXandY = false, bool isAdjustAbsolute = false);
 
-	float X() {
-		return x;
-	}
-	float Y() {
-		return y;
-	}
-	float Z() {
-		return z;
-	}
+	int GetBottomRow();
+	void RemoveFullRows();
+
+	int GetSize() {return size;}
+
+protected:
+	virtual void CreateContainer();
 
 private:
-	bool IsThereSpaceHere(int col, int row);
+	int size;
+
 	void RemoveGaps();
-	void RemoveFullRows();
-	int GetSmallestDistance(int wellRow, int pieceRowInWell, int currentDistanc);
-	int GetBottomRow();
-	void PushIntoVector(std::vector<float> &vector, PC &pc, float *normal, float* colour);
-	void MakeElements(std::vector<unsigned short> &el, int numElements, int cubeNum);
 };
 
 #endif /* PIECE_H_ */

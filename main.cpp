@@ -11,13 +11,14 @@
 #include "shader_utils.h"
 #include "resTexture.cpp"
 #include "Piece.h"
+#include "Well.h"
 
 #define SPACEBAR 32
 #define ESCAPE 27
 #define ROTATE_LEFT 65 //capital A
 #define ROTATE_RIGHT 83 //capital S
 
-void GenerateBuffers(Piece& p, GLuint& vbo, GLuint& ibo);
+void GenerateBuffers(AbstractPiece& p, GLuint& vbo, GLuint& ibo);
 void MakePieces();
 void PickPiece();
 
@@ -94,7 +95,7 @@ unsigned char key;
 int moveDelay = 0;
 
 std::vector<Piece> pieces;
-Piece* well = 0;
+Well* well = 0;
 Piece* cp = 0;
 
 int init_resources(void) {
@@ -196,7 +197,7 @@ void timerCallBack(int value) {
 	}
 	key = -1;
 
-	if (well->MustMove(*cp)) {
+	if (cp->MustMove()) {
 		if (well->CanMove(*cp)) {
 			cp->Move(0, 1);
 		} else {
@@ -209,7 +210,7 @@ void timerCallBack(int value) {
 
 				GenerateBuffers(*well, vbo_fixed, ibo_fixed);
 
-				translate_fixed = glm::translate(glm::mat4(1.0f), glm::vec3(well->X() - 10, well->Y() + 14.0, well->Z()));
+				translate_fixed = glm::translate(glm::mat4(1.0f), glm::vec3(well->getX() - 10, well->getY() + 14.0, well->getZ()));
 
 				PickPiece();
 
@@ -228,7 +229,7 @@ void timerCallBack(int value) {
 	}
 
 	if (!isGameOver) {
-		translate = glm::translate(glm::mat4(1.0f), glm::vec3(cp->X() - 10, cp->Y() + 14.0, cp->Z()));
+		translate = glm::translate(glm::mat4(1.0f), glm::vec3(cp->getX() - 10, cp->getY() + 14.0, cp->getZ()));
 
 		glm::mat4 view = glm::lookAt(glm::vec3(0.0, 0.0, -40.0),  // the position of your camera, in world space
 		glm::vec3(0.0, 0.0, 0.0),  // where you want to look at, in world space
@@ -245,7 +246,7 @@ void timerCallBack(int value) {
 	}
 }
 
-void GenerateBuffers(Piece& p, GLuint& vbo, GLuint& ibo) {
+void GenerateBuffers(AbstractPiece& p, GLuint& vbo, GLuint& ibo) {
 	std::vector<float> cs;
 	std::vector<unsigned short> el;
 	p.ConvertToCubes(cs, el);
@@ -437,37 +438,37 @@ int main(int argc, char* argv[]) {
 }
 
 void MakePieces() {
-	Piece t = Piece(3, 3, 0.0, 0.0, 0.0);
+	Piece t = Piece(3, 0.0, 0.0, 0.0);
 	t.Set(0, 0, true);
 	t.Set(1, 0, true);
 	t.Set(2, 0, true);
 	t.Set(1, 1, true);
 	t.Set(1, 2, true);
 
-	Piece i = Piece(3, 3, 0.0, 0.0, 0.0);
+	Piece i = Piece(3, 0.0, 0.0, 0.0);
 	i.Set(0, 0, true);
 	i.Set(0, 1, true);
 	i.Set(0, 2, true);
 
-	Piece l = Piece(3, 3, 0.0, 0.0, 0.0);
+	Piece l = Piece(3, 0.0, 0.0, 0.0);
 	l.Set(0, 0, true);
 	l.Set(0, 1, true);
 	l.Set(0, 2, true);
 	l.Set(1, 2, true);
 
-	Piece sqr = Piece(2, 2, 0.0, 0.0, 0.0);
+	Piece sqr = Piece(2, 0.0, 0.0, 0.0);
 	sqr.Set(0, 0, true);
 	sqr.Set(0, 1, true);
 	sqr.Set(1, 0, true);
 	sqr.Set(1, 1, true);
 
-	Piece zl = Piece(3, 3, 0.0, 0.0, 0.0);
+	Piece zl = Piece(3, 0.0, 0.0, 0.0);
 	zl.Set(0, 0, true);
 	zl.Set(0, 1, true);
 	zl.Set(1, 1, true);
 	zl.Set(2, 1, true);
 
-	Piece zr = Piece(3, 3, 0.0, 0.0, 0.0);
+	Piece zr = Piece(3, 0.0, 0.0, 0.0);
 	zr.Set(2, 0, true);
 	zr.Set(1, 0, true);
 	zr.Set(1, 1, true);
@@ -480,7 +481,7 @@ void MakePieces() {
 	pieces.push_back(zl);
 	pieces.push_back(zr);
 
-	well = new Piece(10, 14, 0.0, 0.0, 0.0);
+	well = new Well(10, 14, 0.0, 0.0, 0.0);
 }
 
 void PickPiece() {

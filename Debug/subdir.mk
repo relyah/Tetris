@@ -4,6 +4,7 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../AbstractPiece.cpp \
 ../Piece.cpp \
 ../Well.cpp \
 ../main.cpp \
@@ -11,6 +12,7 @@ CPP_SRCS += \
 ../shader_utils.cpp 
 
 OBJS += \
+./AbstractPiece.o \
 ./Piece.o \
 ./Well.o \
 ./main.o \
@@ -18,6 +20,7 @@ OBJS += \
 ./shader_utils.o 
 
 CPP_DEPS += \
+./AbstractPiece.d \
 ./Piece.d \
 ./Well.d \
 ./main.d \

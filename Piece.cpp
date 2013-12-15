@@ -7,182 +7,43 @@
 
 #include "Piece.h"
 
-Piece::Piece(int maxCol, int maxRow, float x, float y, float z) {
-	Reset(x, y, z);
+Piece::Piece(int size, float x, float y, float z) :
+		AbstractPiece(x, y, z) {
 
-	this->maxRow = maxRow;
-	this->maxCol = maxCol;
+	this->size = size;
 
-	piece = PieceArray(maxCol);
+	CreateContainer();
 
-	for (int c = 0; c < maxCol; c++) {
-		piece[c] = PieceRowArray(maxRow);
-		for (int r = 0; r < maxRow; r++) {
-			piece[c][r] = false;
-		}
-	}
-
-	//reset all pieces
-//	for (PieceArray::iterator c = piece.begin(); c != piece.end(); ++c) {
-//		for (PieceRowArray::iterator r = (*c).begin(); r != (*c).end(); ++r) {
-//			*r = false;
-//		}
-//	}
 }
 
 Piece::~Piece() {
 
 }
 
-void Piece::Reset(float x, float y, float z) {
-	top = 0;
-	left = 0;
-	sideLength = 2;
-	this->x = x;
-	this->y = y;
-	this->z = z;
-	incX = 0.0;
-	incY = -0.2;
-	incZ = 0.0;
+void Piece::CreateContainer() {
+	container = PieceArray(size);
+
+	for (int c = 0; c < size; c++) {
+		container[c] = PieceRowArray(size);
+		for (int r = 0; r < size; r++) {
+			container[c][r] = false;
+		}
+	}
 }
 
 void Piece::Set(int col, int row, bool flag) {
-	if (col < 0 || col >= this->maxCol)
+	if (col < 0 || col >= this->size)
 		return;
-	if (row < 0 || row >= this->maxRow)
+	if (row < 0 || row >= this->size)
 		return;
 
-	piece[col][row] = flag;
-}
-
-void Piece::ConvertToCubes(std::vector<float> &cs, std::vector<unsigned short> &el) {
-
-	int numElements = 24;
-	int cubeNum = 0;
-
-	int col = 0;
-	for (PieceArray::iterator c = piece.begin(); c != piece.end(); ++c) {
-
-		int row = -1;
-		for (PieceRowArray::iterator r = (*c).begin(); r != (*c).end(); ++r) {
-			row++;
-			if (!(*r))
-				continue;
-
-//			PC f_bl = { (float) (left * sideLength + col * sideLength), (float) (-top * sideLength - (row + 1) * sideLength),
-//					1.0 };
-			PC f_bl = { (float) (col * sideLength), (float) (-(row + 1) * sideLength), 1.0 };
-			PC f_br = { f_bl.x + sideLength, f_bl.y, 1.0 };
-			PC f_tl = { f_bl.x, f_bl.y + sideLength, 1.0 };
-			PC f_tr = { f_br.x, f_tl.y, 1.0 };
-			PC b_tl = { f_tl.x, f_tl.y, -1.0 };
-			PC b_tr = { f_tr.x, f_tr.y, -1.0 };
-			PC b_bl = { f_bl.x, f_bl.y, -1.0 };
-			PC b_br = { f_tr.x, f_bl.y, -1.0 };
-
-			//front
-			PushIntoVector(cs, f_bl, new float[3] { 0.0, 0.0, 1.0 }, new float[3] { 0.8, 0.1, 0.0 });
-			PushIntoVector(cs, f_br, new float[3] { 0.0, 0.0, 1.0 }, new float[3] { 0.8, 0.1, 0.0 });
-			PushIntoVector(cs, f_tr, new float[3] { 0.0, 0.0, 1.0 }, new float[3] { 0.8, 0.1, 0.0 });
-			PushIntoVector(cs, f_tl, new float[3] { 0.0, 0.0, 1.0 }, new float[3] { 0.8, 0.1, 0.0 });
-
-			//top
-			PushIntoVector(cs, f_tl, new float[3] { 0.0, 1.0, 0.0 }, new float[3] { 0.1, 0.8, 0.0 });
-			PushIntoVector(cs, f_tr, new float[3] { 0.0, 1.0, 0.0 }, new float[3] { 0.1, 0.8, 0.0 });
-			PushIntoVector(cs, b_tr, new float[3] { 0.0, 1.0, 0.0 }, new float[3] { 0.1, 0.8, 0.0 });
-			PushIntoVector(cs, b_tl, new float[3] { 0.0, 1.0, 0.0 }, new float[3] { 0.1, 0.8, 0.0 });
-
-			//back
-			PushIntoVector(cs, b_br, new float[3] { 0.0, 0.0, -1.0 }, new float[3] { 0.1, 0.0, 0.8 });
-			PushIntoVector(cs, b_bl, new float[3] { 0.0, 0.0, -1.0 }, new float[3] { 0.1, 0.0, 0.8 });
-			PushIntoVector(cs, b_tl, new float[3] { 0.0, 0.0, -1.0 }, new float[3] { 0.1, 0.0, 0.8 });
-			PushIntoVector(cs, b_tr, new float[3] { 0.0, 0.0, -1.0 }, new float[3] { 0.1, 0.0, 0.8 });
-
-			//bottom
-			PushIntoVector(cs, b_bl, new float[3] { 0.0, -1.0, 0.0 }, new float[3] { 0.0, 0.5, 0.5 });
-			PushIntoVector(cs, b_br, new float[3] { 0.0, -1.0, 0.0 }, new float[3] { 0.0, 0.5, 0.5 });
-			PushIntoVector(cs, f_br, new float[3] { 0.0, -1.0, 0.0 }, new float[3] { 0.0, 0.5, 0.5 });
-			PushIntoVector(cs, f_bl, new float[3] { 0.0, -1.0, 0.0 }, new float[3] { 0.0, 0.5, 0.5 });
-
-			//left
-			PushIntoVector(cs, b_bl, new float[3] { -1.0, 0.0, 0.0 }, new float[3] { 0.5, 0.5, 0.0 });
-			PushIntoVector(cs, f_bl, new float[3] { -1.0, 0.0, 0.0 }, new float[3] { 0.5, 0.5, 0.0 });
-			PushIntoVector(cs, f_tl, new float[3] { -1.0, 0.0, 0.0 }, new float[3] { 0.5, 0.5, 0.0 });
-			PushIntoVector(cs, b_tl, new float[3] { -1.0, 0.0, 0.0 }, new float[3] { 0.5, 0.5, 0.0 });
-
-			//right
-			PushIntoVector(cs, f_br, new float[3] { 1.0, 0.0, 0.0 }, new float[3] { 1.0, 0.2, 0.4 });
-			PushIntoVector(cs, b_br, new float[3] { 1.0, 0.0, 0.0 }, new float[3] { 1.0, 0.2, 0.4 });
-			PushIntoVector(cs, b_tr, new float[3] { 1.0, 0.0, 0.0 }, new float[3] { 1.0, 0.2, 0.4 });
-			PushIntoVector(cs, f_tr, new float[3] { 1.0, 0.0, 0.0 }, new float[3] { 1.0, 0.2, 0.4 });
-
-			MakeElements(el, numElements, cubeNum);
-
-			cubeNum++; //increment the cube counter;
-
-		}
-		col++;
-
-	}
-
-}
-
-bool Piece::CanAdd(Piece& other) {
-	for (int c = 0; c < other.maxCol; c++) {
-		for (int r = 0; r < other.maxRow; r++) {
-			if (other.piece[c][r] && this->piece[other.left + c][other.top + r])
-				return false;
-		}
-	}
-	return true;
-}
-void Piece::Add(Piece& other) {
-	for (int c = 0; c < other.maxCol; c++) {
-
-		for (int r = 0; r < other.maxRow; r++) {
-			if (!other.piece[c][r])
-				continue;
-
-			this->piece[other.left + c][other.top + r] = true;
-		}
-	}
-
-	RemoveFullRows();
+	container[col][row] = flag;
 }
 
 void Piece::Increment(bool isIncX, bool isIncY, bool isIncZ) {
 	x += (isIncX ? incX : 0.0);
 	y += (isIncY ? incY : 0.0);
 	z += (isIncZ ? incZ : 0.0);
-}
-
-bool Piece::CanMove(Piece& other, int incCol, int incRow) {
-
-	int otherMaxRowInWell = other.GetBottomRow() + other.top;
-	if (otherMaxRowInWell >= this->maxRow - 1)
-		return false;
-
-	for (int row = other.maxRow - 1; row >= 0; row--) {
-		for (int col = other.maxCol - 1; col >= 0; col--) {
-			if (other.piece[col][row]) {
-				int testCol = col + other.left + incCol;
-				if (testCol < 0 || testCol >= this->maxCol)
-					return false;
-				int testRow = row + other.top + incRow;
-				if (testRow < 0 || testRow >= this->maxRow)
-					return false;
-				if (this->piece[testCol][testRow])
-					return false;
-			}
-		}
-	}
-	return true;
-}
-
-bool Piece::MustMove(Piece& other) {
-	float upperBound = -(float) (other.top * other.sideLength) - other.incY / 2.0;
-
-	return other.y <= upperBound;
 }
 
 void Piece::Move(int incCol, int incRow, bool isAdjustXandY, bool isAdjustAbsolute) {
@@ -200,108 +61,36 @@ void Piece::Move(int incCol, int incRow, bool isAdjustXandY, bool isAdjustAbsolu
 	}
 }
 
-void Piece::Drop(Piece& other) {
-
-	int dropDistance = maxRow;
-
-	for (int row = other.maxRow - 1; row >= 0; row--) {
-		for (int col = other.maxCol - 1; col >= 0; col--) {
-			if (other.piece[col][row]) {
-
-				int pieceRowInWell = row + other.top;
-
-				//get drop distance for empty well
-				dropDistance = GetSmallestDistance(this->maxRow - 1, pieceRowInWell, dropDistance);
-
-				//get drop distance when well contains pieces
-				int wellCol = col + other.left;
-				for (int wellRow = this->maxRow - 1; wellRow >= 0; wellRow--) {
-					//check for piece
-					if (this->piece[wellCol][wellRow]) {
-						dropDistance = GetSmallestDistance(wellRow - 1, pieceRowInWell, dropDistance);
-					}
-				}
-			}
-
-		}
-	}
-
-	other.Move(0, dropDistance, true, true);
-}
-
-bool Piece::CanRotateLeft(Piece& other) {
-	for (int row = 0; row < other.maxRow; row++) {
-		for (int col = 0; col < other.maxCol; col++) {
-			if (other.piece[col][row]) {
-				int newRow = other.maxCol - 1 - col;
-				int newCol = row;
-
-				if (!IsThereSpaceHere(newCol + other.left, newRow + other.top))
-					return false;
-			}
-		}
-
-	}
-	return true;
-
-}
-
-bool Piece::CanRotateRight(Piece& other) {
-	for (int row = 0; row < other.maxRow; row++) {
-		for (int col = 0; col < other.maxCol; col++) {
-			if (other.piece[col][row]) {
-				int rotatedRow = col;
-				int rotatedCol = other.maxCol - 1 - row;
-
-				if (!IsThereSpaceHere(rotatedCol + other.left, rotatedRow + other.top))
-					return false;
-			}
-		}
-
-	}
-	return true;
-
-}
-
-bool Piece::IsThereSpaceHere(int col, int row) {
-	if (row < 0 || row >= maxRow)
-		return false;
-	if (col < 0 || col >= maxCol)
-		return false;
-
-	return !piece[col][row];
-}
-
 void Piece::RotateLeft() {
-	int n = maxCol;
+	int n = size;
 	int f = floor((float) n / 2.0);
 	int c = ceil((float) n / 2.0);
 
 	for (int x = 0; x < f; x++)
 		for (int y = 0; y < c; y++) {
 
-			bool temp = piece[x][y];
-			piece[x][y] = piece[n - 1 - y][x];
-			piece[n - 1 - y][x] = piece[n - 1 - x][n - 1 - y];
-			piece[n - 1 - x][n - 1 - y] = piece[y][n - 1 - x];
-			piece[y][n - 1 - x] = temp;
+			bool temp = container[x][y];
+			container[x][y] = container[n - 1 - y][x];
+			container[n - 1 - y][x] = container[n - 1 - x][n - 1 - y];
+			container[n - 1 - x][n - 1 - y] = container[y][n - 1 - x];
+			container[y][n - 1 - x] = temp;
 		}
 }
 
 void Piece::RotateRight() {
-	int n = maxCol;
+	int n = size;
 	int f = floor((float) n / 2.0);
 	int c = ceil((float) n / 2.0);
 
 	for (int x = 0; x < f; x++)
 		for (int y = 0; y < c; y++) {
 
-			bool temp = piece[x][y];
-			piece[x][y] = piece[y][n - 1 - x];
+			bool temp = container[x][y];
+			container[x][y] = container[y][n - 1 - x];
 
-			piece[y][n - 1 - x] = piece[n - 1 - x][n - 1 - y];
-			piece[n - 1 - x][n - 1 - y] = piece[n - 1 - y][x];
-			piece[n - 1 - y][x] = temp;
+			container[y][n - 1 - x] = container[n - 1 - x][n - 1 - y];
+			container[n - 1 - x][n - 1 - y] = container[n - 1 - y][x];
+			container[n - 1 - y][x] = temp;
 		}
 
 	RemoveGaps();
@@ -309,11 +98,11 @@ void Piece::RotateRight() {
 
 void Piece::RemoveGaps() {
 	int emptyRows = 0;
-	int emptyCols = maxCol;
+	int emptyCols = size;
 	bool isRowEmpty = true;
-	for (int row = 0; row < maxRow; row++) {
-		for (int col = 0; col < maxCol; col++) {
-			if (piece[col][row]) {
+	for (int row = 0; row < size; row++) {
+		for (int col = 0; col < size; col++) {
+			if (container[col][row]) {
 				isRowEmpty = false;
 				if (col < emptyCols) {
 					emptyCols = col;
@@ -326,11 +115,11 @@ void Piece::RemoveGaps() {
 		}
 	}
 
-	if (emptyRows > 0 || (emptyCols > 0 && emptyCols < maxCol)) {
-		for (int row = emptyRows; row < maxRow; row++) {
-			for (int col = emptyCols; col < maxCol; col++) {
-				piece[col - emptyCols][row - emptyRows] = piece[col][row];
-				piece[col][row] = false;
+	if (emptyRows > 0 || (emptyCols > 0 && emptyCols < size)) {
+		for (int row = emptyRows; row < size; row++) {
+			for (int col = emptyCols; col < size; col++) {
+				container[col - emptyCols][row - emptyRows] = container[col][row];
+				container[col][row] = false;
 			}
 
 		}
@@ -338,21 +127,21 @@ void Piece::RemoveGaps() {
 }
 
 void Piece::RemoveFullRows() {
-	for (int row = 0; row < maxRow; row++) {
+	for (int row = 0; row < size; row++) {
 		bool isRowFull = true;
-		for (int col = 0; col < maxCol; col++) {
-			isRowFull &= piece[col][row];
+		for (int col = 0; col < size; col++) {
+			isRowFull &= container[col][row];
 		}
 
 		if (isRowFull) {
-			for (int col = 0; col < maxCol; col++) {
-				piece[col][row] = false;
+			for (int col = 0; col < size; col++) {
+				container[col][row] = false;
 			}
 
 			for (int dropRow = row - 1; dropRow >= 0; dropRow--) {
-				for (int col = 0; col < maxCol; col++) {
-					piece[col][dropRow + 1] = piece[col][dropRow];
-					piece[col][dropRow] = false;
+				for (int col = 0; col < size; col++) {
+					container[col][dropRow + 1] = container[col][dropRow];
+					container[col][dropRow] = false;
 				}
 			}
 		}
@@ -360,84 +149,18 @@ void Piece::RemoveFullRows() {
 	}
 }
 
-int Piece::GetSmallestDistance(int wellRow, int pieceRowInWell, int currentDistance) {
-	int newDD = wellRow - pieceRowInWell; //calculate distance
-	if (newDD < currentDistance) {
-		return newDD;
-	} else {
-		return currentDistance;
-	}
-}
-
 int Piece::GetBottomRow() {
-	for (int row = maxRow - 1; row >= 0; row--) {
-		for (int col = maxCol - 1; col >= 0; col--) {
-			if (piece[col][row])
+	for (int row = size - 1; row >= 0; row--) {
+		for (int col = size - 1; col >= 0; col--) {
+			if (container[col][row])
 				return row;
 		}
 	}
 	return 0;
 }
 
-void Piece::PushIntoVector(std::vector<float> &cs, PC &pc, float *normal, float* colour) {
-	cs.push_back(pc.x);
-	cs.push_back(pc.y);
-	cs.push_back(pc.z);
+bool Piece::MustMove() {
+	float upperBound = -(float) (top * sideLength) - incY / 2.0;
 
-	cs.push_back(normal[0]);
-	cs.push_back(normal[1]);
-	cs.push_back(normal[2]);
-
-	cs.push_back(colour[0]);
-	cs.push_back(colour[1]);
-	cs.push_back(colour[2]);
+	return y <= upperBound;
 }
-
-void Piece::MakeElements(std::vector<unsigned short> &el, int numElements, int cubeNum) {
-
-	int offset = numElements * cubeNum;
-//front
-	el.push_back(0 + offset);
-	el.push_back(1 + offset);
-	el.push_back(2 + offset);
-	el.push_back(2 + offset);
-	el.push_back(3 + offset);
-	el.push_back(0 + offset);
-//top
-	el.push_back(4 + offset);
-	el.push_back(5 + offset);
-	el.push_back(6 + offset);
-	el.push_back(6 + offset);
-	el.push_back(7 + offset);
-	el.push_back(4 + offset);
-//back
-	el.push_back(8 + offset);
-	el.push_back(9 + offset);
-	el.push_back(10 + offset);
-	el.push_back(10 + offset);
-	el.push_back(11 + offset);
-	el.push_back(8 + offset);
-//bottom
-	el.push_back(12 + offset);
-	el.push_back(13 + offset);
-	el.push_back(14 + offset);
-	el.push_back(14 + offset);
-	el.push_back(15 + offset);
-	el.push_back(12 + offset);
-//left
-	el.push_back(16 + offset);
-	el.push_back(17 + offset);
-	el.push_back(18 + offset);
-	el.push_back(18 + offset);
-	el.push_back(19 + offset);
-	el.push_back(16 + offset);
-//rightunsigned
-	el.push_back(20 + offset);
-	el.push_back(21 + offset);
-	el.push_back(22 + offset);
-	el.push_back(22 + offset);
-	el.push_back(23 + offset);
-	el.push_back(20 + offset);
-
-}
-

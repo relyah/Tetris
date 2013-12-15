@@ -387,13 +387,19 @@ void specialKeyPressed(int key, int x, int y) {
 }
 
 void onMouseWheel(int button, int dir, int x, int y) {
+	float zoomFactor = 0.0;
 	if (dir > 0) {
 		// Zoom in
-		cameraPosition.z += 1.0;
+		//cameraPosition.z += 1.0;
+		zoomFactor = 0.1;
+
 	} else {
 		// Zoom out
-		cameraPosition.z -= 1.0;
+		//cameraPosition.z -= 1.0;
+		zoomFactor = -0.1;
 	}
+
+	cameraPosition = cameraPosition +  zoomFactor * glm::normalize(cameraPosition - cameraLookAt);
 
 	GenerateCameraView();
 }

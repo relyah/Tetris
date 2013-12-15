@@ -320,30 +320,30 @@ void onDisplay() {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	if (!wellEmpty) {
-//		glUniformMatrix4fv(uniform_m, 1, GL_FALSE, glm::value_ptr(translate_fixed));
-//		glBindBuffer(GL_ARRAY_BUFFER, vbo_fixed);
-//		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_fixed);
-//
-//		glVertexAttribPointer(attribute_coord3d, 3,
-//		GL_FLOAT,
-//		GL_FALSE, sizeof(struct PC),  // stride
-//		0);  // offset
-//
-//		glVertexAttribPointer(attribute_normal, 3,
-//		GL_FLOAT,
-//		GL_FALSE, sizeof(struct PC),  // stride
-//		(GLvoid*) offsetof(struct PC, normal));
-//
-//		glVertexAttribPointer(attribute_colour, 3,
-//		GL_FLOAT,
-//		GL_FALSE, sizeof(struct PC),  // stride
-//		(GLvoid*) offsetof(struct PC, colour));
-//
-//		int size = 0;
-//		glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
-//		glDrawElements(GL_TRIANGLES, size / sizeof(GLushort), GL_UNSIGNED_SHORT, 0);
-//		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-//		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glUniformMatrix4fv(uniform_m, 1, GL_FALSE, glm::value_ptr(translate_fixed));
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_fixed);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_fixed);
+
+		glVertexAttribPointer(attribute_coord3d, 3,
+		GL_FLOAT,
+		GL_FALSE, sizeof(struct PC),  // stride
+		0);  // offset
+
+		glVertexAttribPointer(attribute_normal, 3,
+		GL_FLOAT,
+		GL_FALSE, sizeof(struct PC),  // stride
+		(GLvoid*) offsetof(struct PC, normal));
+
+		glVertexAttribPointer(attribute_colour, 3,
+		GL_FLOAT,
+		GL_FALSE, sizeof(struct PC),  // stride
+		(GLvoid*) offsetof(struct PC, colour));
+
+		int size = 0;
+		glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
+		glDrawElements(GL_TRIANGLES, size / sizeof(GLushort), GL_UNSIGNED_SHORT, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 	glVertexAttribPointer(attribute_normal, 3,
 	GL_FLOAT,
@@ -356,32 +356,32 @@ void onDisplay() {
 	(GLvoid*) offsetof(struct PC, colour));
 
 	if (!isGameOver) {
-//		glUniformMatrix4fv(uniform_m, 1, GL_FALSE, glm::value_ptr(translate));
-//
-//		glBindBuffer(GL_ARRAY_BUFFER, vbo_cube);
-//
-//		glVertexAttribPointer(attribute_coord3d, 3,
-//		GL_FLOAT,
-//		GL_FALSE, sizeof(struct PC),  // stride
-//		0);  // offset
-//
-//		glVertexAttribPointer(attribute_normal, 3,
-//		GL_FLOAT,
-//		GL_FALSE, sizeof(struct PC),  // stride
-//		(GLvoid*) offsetof(struct PC, normal));
-//
-//		glVertexAttribPointer(attribute_colour, 3,
-//		GL_FLOAT,
-//		GL_FALSE, sizeof(struct PC),  // stride
-//		(GLvoid*) offsetof(struct PC, colour));
-//
-//		/* Push each element in buffer_vertices to the vertex shader */
-//		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_cube_elements);
-//		int size = 0;
-//		glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
-//		glDrawElements(GL_TRIANGLES, size / sizeof(GLushort), GL_UNSIGNED_SHORT, 0);
-//		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-//		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glUniformMatrix4fv(uniform_m, 1, GL_FALSE, glm::value_ptr(translate));
+
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_cube);
+
+		glVertexAttribPointer(attribute_coord3d, 3,
+		GL_FLOAT,
+		GL_FALSE, sizeof(struct PC),  // stride
+		0);  // offset
+
+		glVertexAttribPointer(attribute_normal, 3,
+		GL_FLOAT,
+		GL_FALSE, sizeof(struct PC),  // stride
+		(GLvoid*) offsetof(struct PC, normal));
+
+		glVertexAttribPointer(attribute_colour, 3,
+		GL_FLOAT,
+		GL_FALSE, sizeof(struct PC),  // stride
+		(GLvoid*) offsetof(struct PC, colour));
+
+		/* Push each element in buffer_vertices to the vertex shader */
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_cube_elements);
+		int size = 0;
+		glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
+		glDrawElements(GL_TRIANGLES, size / sizeof(GLushort), GL_UNSIGNED_SHORT, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 	/* Display the result */
 	glutSwapBuffers();
@@ -521,11 +521,11 @@ void MakePieces() {
 	zr.Set(0, 1, true);
 
 	pieces.push_back(sqr);
-	pieces.push_back(t);
-	pieces.push_back(i);
-	pieces.push_back(l);
-	pieces.push_back(zl);
-	pieces.push_back(zr);
+//	pieces.push_back(t);
+//	pieces.push_back(i);
+//	pieces.push_back(l);
+//	pieces.push_back(zl);
+//	pieces.push_back(zr);
 
 	well = new Well(10, 14, 0.0, 0.0, 0.0);
 }

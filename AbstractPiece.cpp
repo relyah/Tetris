@@ -23,9 +23,6 @@ void AbstractPiece::Reset(float x, float y, float z) {
 	this->x = x;
 	this->y = y;
 	this->z = z;
-	incX = 0.0;
-	incY = -0.2;
-	incZ = 0.0;
 }
 
 void AbstractPiece::ConvertToCubes(std::vector<float> &cs, std::vector<unsigned short> &el) {

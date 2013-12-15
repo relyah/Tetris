@@ -38,17 +38,19 @@ bool Well::CanAdd(Piece& other) {
 }
 
 void Well::Add(Piece& other) {
-	for (int c = 0; c < other.GetSize(); c++) {
+	int otherSize =other.GetSize();
+	PieceArray otherContainer = other.getContainer();
+	for (int c = 0; c < otherSize ; c++) {
 
-		for (int r = 0; r < other.GetSize(); r++) {
-			if (!other.getContainer()[c][r])
+		for (int r = 0; r < otherSize; r++) {
+			if (!otherContainer[c][r])
 				continue;
 
 			this->container[other.getLeft() + c][other.getTop() + r] = true;
 		}
 	}
 
-	other.RemoveFullRows();
+	RemoveFullRows();
 }
 
 bool Well::CanMove(Piece& other, int incCol, int incRow) {
@@ -57,8 +59,9 @@ bool Well::CanMove(Piece& other, int incCol, int incRow) {
 	if (otherMaxRowInWell >= this->maxRow - 1)
 		return false;
 
-	for (int row = other.GetSize() - 1; row >= 0; row--) {
-		for (int col = other.GetSize() - 1; col >= 0; col--) {
+	int otherSize =other.GetSize();
+	for (int row = otherSize- 1; row >= 0; row--) {
+		for (int col = otherSize - 1; col >= 0; col--) {
 			if (other.getContainer()[col][row]) {
 				int testCol = col + other.getLeft() + incCol;
 				if (testCol < 0 || testCol >= this->maxCol)
@@ -149,14 +152,14 @@ bool Well::IsThereSpaceHere(int col, int row) {
 void Well::MakeGrid(std::vector<float> &cs) {
 	cs.clear();
 
-	float z = 1.1;
+	float z = -1.1;
 
 	for (int row = 0; row <= maxRow; row++) {
 
 		float xStart = 0.0;
 		float y = -(float) (row * sideLength);
 
-		float xEnd = -(float) (maxCol * sideLength);
+		float xEnd = (float) (maxCol * sideLength);
 
 		PC start = { xStart, y, z };
 		PC end = { xEnd, y, z };
@@ -169,7 +172,7 @@ void Well::MakeGrid(std::vector<float> &cs) {
 	for (int col = 0; col <= maxCol; col++) {
 
 		float yStart = 0.0;
-		float x = -(float) (col * sideLength);
+		float x = (float) (col * sideLength);
 
 		float yEnd = -(float) (maxRow * sideLength);
 
@@ -182,3 +185,28 @@ void Well::MakeGrid(std::vector<float> &cs) {
 	}
 }
 
+void Well::RemoveFullRows() {
+	//go through all rows and look for full rows
+	for (int row = 0; row < maxRow; row++) {
+		bool isRowFull = true;
+		for (int col = 0; col < maxCol; col++) {
+			isRowFull &= container[col][row];
+		}
+
+		if (isRowFull) {
+			//remove the full row
+			for (int col = 0; col < maxCol; col++) {
+				container[col][row] = false;
+			}
+
+			//drop everything above the removed row
+			for (int dropRow = row - 1; dropRow >= 0; dropRow--) {
+				for (int col = 0; col < maxCol; col++) {
+					container[col][dropRow + 1] = container[col][dropRow];
+					container[col][dropRow] = false;
+				}
+			}
+		}
+
+	}
+}

@@ -15,11 +15,17 @@
 
 #define SPACEBAR 32
 #define ESCAPE 27
-#define ROTATE_LEFT 65 //capital A
-#define ROTATE_RIGHT 83 //capital S
+#define ROTATE_LEFT 83 //capital S
+#define ROTATE_RIGHT 65 //capital A
+#define RESET_CAMERA 67
+#define PAUSE 80 // capital P
+#define ROTATE_Y 89//capital Y
+#define ROTATE_X 88//capital X
 
 int InitProgram();
 void InitCamera();
+void ResetCamera();
+void GenerateCameraView();
 void GenerateBuffers(AbstractPiece& p, GLuint& vbo, GLuint& ibo);
 void GenerateArrayBuffer(std::vector<float>& vertices, GLuint& vbo);
 void GenerateElementBuffer(std::vector<unsigned short>& elements, GLuint& ibo);
@@ -87,6 +93,9 @@ GLint uniformMytexture;
 bool wellEmpty = true;
 bool isGameOver = false;
 bool isCameraRotate = false;
+bool isRotateY = false;
+bool isRotateX = false;
+bool isPause = false;
 glm::vec3 cameraPosition;
 glm::vec3 cameraLookAt;
 glm::vec3 cameraUp;
@@ -188,23 +197,16 @@ void timerCallBack(int value) {
 
 		}
 	} else {
-		cp->Increment(false, true, false);
+		cp->Increment(false, !isPause, false);
 	}
 
 	if (!isGameOver) {
 		translate = glm::translate(glm::mat4(1.0f), glm::vec3(cp->getX(), cp->getY(), cp->getZ()));
 
-		glm::mat4 view = glm::lookAt(cameraPosition, cameraLookAt, cameraUp);
-
-		glm::mat4 projection = glm::perspective(45.0f, 1.0f * screen_width / screen_height, 0.1f, 100.0f);
-
-		glUseProgram(program);
-//	glUniformMatrix4fv(uniform_m, 1, GL_FALSE, glm::value_ptr(model));
-		glUniformMatrix4fv(uniform_v, 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(uniform_p, 1, GL_FALSE, glm::value_ptr(projection));
-		glutPostRedisplay();
 		glutTimerFunc(100, timerCallBack, 0);
 	}
+
+	glutPostRedisplay();
 }
 
 void GenerateBuffers(AbstractPiece& p, GLuint& vbo, GLuint& ibo) {
@@ -246,12 +248,15 @@ void onDisplay() {
 	glUseProgram(program);
 
 	translate_fixed = glm::translate(glm::mat4(1.0f), glm::vec3(well->getX(), well->getY(), well->getZ()));
+	glUniformMatrix4fv(uniform_m, 1, GL_FALSE, glm::value_ptr(translate_fixed));
+	GenerateCameraView();
+	glm::mat4 projection = glm::perspective(45.0f, 1.0f * screen_width / screen_height, 0.1f, 100.0f);
+	glUniformMatrix4fv(uniform_p, 1, GL_FALSE, glm::value_ptr(projection));
 
 	glEnableVertexAttribArray(attribute_coord3d);
 	glEnableVertexAttribArray(attribute_normal);
 	glEnableVertexAttribArray(attribute_colour);
 
-	glUniformMatrix4fv(uniform_m, 1, GL_FALSE, glm::value_ptr(translate_fixed));
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_grid);
 
 	glVertexAttribPointer(attribute_coord3d, 3, //number of components per coordinate
@@ -275,7 +280,7 @@ void onDisplay() {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	if (!wellEmpty) {
-		glUniformMatrix4fv(uniform_m, 1, GL_FALSE, glm::value_ptr(translate_fixed));
+
 		glBindBuffer(GL_ARRAY_BUFFER, vbo_fixed);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_fixed);
 
@@ -300,17 +305,9 @@ void onDisplay() {
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
-	glVertexAttribPointer(attribute_normal, 3,
-	GL_FLOAT,
-	GL_FALSE, sizeof(struct PC),  // stride
-	(GLvoid*) offsetof(struct PC, normal));
-
-	glVertexAttribPointer(attribute_colour, 3,
-	GL_FLOAT,
-	GL_FALSE, sizeof(struct PC),  // stride
-	(GLvoid*) offsetof(struct PC, colour));
 
 	if (!isGameOver) {
+
 		glUniformMatrix4fv(uniform_m, 1, GL_FALSE, glm::value_ptr(translate));
 
 		glBindBuffer(GL_ARRAY_BUFFER, vbo_cube);
@@ -377,8 +374,24 @@ void onReshape(int width, int height) {
 void keyPressed(unsigned char key, int x, int y) {
 	::key = toupper(key);
 
-	if (key == ESCAPE)
+	switch (::key) {
+	case ESCAPE:
 		glutLeaveMainLoop();
+		break;
+	case RESET_CAMERA:
+		ResetCamera();
+		break;
+	case PAUSE:
+		isPause = !isPause;
+		break;
+	case ROTATE_X:
+		isRotateX = !isRotateX;
+		break;
+	case ROTATE_Y:
+		isRotateY = !isRotateY;
+		break;
+	}
+
 }
 
 void specialKeyPressed(int key, int x, int y) {
@@ -404,38 +417,37 @@ void onMotion(int x, int y) {
 		int xPos = x;
 		int yPos = y;
 
-		//yaw
-		int delta = xPos - prevxPos;
-		yAngle += (float) delta * 0.1f;
-//		D3DXMATRIX rotation;
-//		D3DXMatrixRotationAxis(&rotation, &cameraUp, D3DXToRadian((float) delta));
-//		D3DXVec3TransformNormal(&right, &right, &rotation);
-//		D3DXVec3TransformNormal(&cameraPosition, &cameraPosition, &rotation);
+		if (isRotateY) {
+			//yaw
+			int delta = xPos - prevxPos;
+			yAngle += (float) delta * 0.05f;
 
-		glm::mat4 rotate = glm::mat4(1.0f);
-		rotate = glm::rotate(rotate, yAngle, cameraUp);
-		cameraRight = glm::vec3(glm::normalize(rotate * glm::vec4(cameraRight, 0.0)));
-		cameraPosition = glm::vec3(rotate * glm::vec4(cameraPosition, 0.0));
+			glm::mat4 rotate = glm::mat4(1.0f);
+			rotate = glm::rotate(rotate, (float) delta, cameraUp);
+			cameraRight = glm::vec3(glm::normalize(rotate * glm::vec4(cameraRight, 0.0)));
+			cameraPosition = glm::vec3(rotate * glm::vec4(cameraPosition, 0.0));
+		}
 
-		//pitch
-		delta = prevyPos - yPos;
-		xAngle += (float) delta * 0.1f;
-//
-//    D3DXMatrixRotationAxis(&rotation, &right, D3DXToRadian((float)delta));
-//              D3DXVec3TransformNormal(&cameraUp, &cameraUp, &rotation);
-//              D3DXVec3TransformNormal(&cameraPosition, &cameraPosition, &rotation);
-		rotate = glm::mat4(1.0f);
-		rotate = glm::rotate(rotate, xAngle, cameraRight);
-		cameraUp = glm::vec3(glm::normalize(rotate * glm::vec4(cameraUp, 0.0)));
-		cameraPosition = glm::vec3(rotate * glm::vec4(cameraPosition, 0.0));
+		if (isRotateX) {
+			//pitch
+			int delta = prevyPos - yPos;
+			xAngle += (float) delta * 0.05f;
 
-		prevxPos = xPos;
-		prevyPos = yPos;
+			glm::mat4 rotate = glm::mat4(1.0f);
+			rotate = glm::rotate(rotate, (float) delta, cameraRight);
+			cameraUp = glm::vec3(glm::normalize(rotate * glm::vec4(cameraUp, 0.0)));
+			cameraPosition = glm::vec3(rotate * glm::vec4(cameraPosition, 0.0));
+
+			prevxPos = xPos;
+			prevyPos = yPos;
+		}
 
 		if (yAngle >= 360.0f)
 			yAngle -= 360.0f;
 		if (yAngle <= 0.0f)
 			yAngle += 360.0f;
+
+		GenerateCameraView();
 
 	}
 }
@@ -536,11 +548,11 @@ void MakePieces() {
 	zr.Set(0, 1, true);
 
 	pieces.push_back(sqr);
-//	pieces.push_back(t);
-//	pieces.push_back(i);
-//	pieces.push_back(l);
-//	pieces.push_back(zl);
-//	pieces.push_back(zr);
+	pieces.push_back(t);
+	pieces.push_back(i);
+	pieces.push_back(l);
+	pieces.push_back(zl);
+	pieces.push_back(zr);
 
 	well = new Well(10, 14, 0.0, 0.0, 0.0);
 }
@@ -565,18 +577,32 @@ int InitProgram() {
 	uniform_m = get_uniform(program, "model");
 	uniform_v = get_uniform(program, "view");
 	uniform_p = get_uniform(program, "projection");
+
 	return 1;
 }
 
+void ResetCamera() {
+	InitCamera();
+}
+
 void InitCamera() {
-	cameraPosition = glm::vec3(-5.0, -14.0, -40.0);  // the position of your camera, in world space
-	cameraLookAt = glm::vec3(-5.0, -14.0, 0.0);  // where you want to look at, in world space
+	cameraPosition = glm::vec3(10.0, -14.0, 40.0);  // the position of your camera, in world space
+	cameraLookAt = glm::vec3(10.0, -14.0, 0.0);  // where you want to look at, in world space
 	cameraUp = glm::vec3(0.0, 1.0, 0.0); //up direction; probably glm::vec3(0,1,0), but (0,-1,0) would make you looking upside-down, which can be great too
 	cameraRight = glm::vec3(1.0, 0.0, 0.0);
 
 	yAngle = 0.0f;
 	xAngle = 0.0f;
-	prevxPos=0;
-	prevyPos=0;
+	prevxPos = 0;
+	prevyPos = 0;
 
+	GenerateCameraView();
 }
+
+void GenerateCameraView() {
+	glUseProgram(program);
+	glm::mat4 view = glm::lookAt(cameraPosition, cameraLookAt, cameraUp);
+	glUniformMatrix4fv(uniform_v, 1, GL_FALSE, glm::value_ptr(view));
+	glutPostRedisplay();
+}
+

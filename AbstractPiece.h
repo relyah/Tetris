@@ -21,18 +21,6 @@ public:
 		return container;
 	}
 
-	float getIncX() const {
-		return incX;
-	}
-
-	float getIncY() const {
-		return incY;
-	}
-
-	float getIncZ() const {
-		return incZ;
-	}
-
 	int getLeft() const {
 		return left;
 	}
@@ -59,7 +47,6 @@ public:
 
 protected:
 	float x, y, z;
-	float incX, incY, incZ;
 	int left;
 	int top;
 	int sideLength;

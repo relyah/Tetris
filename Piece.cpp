@@ -20,6 +20,13 @@ Piece::~Piece() {
 
 }
 
+void Piece::Reset(float x, float y, float z) {
+	AbstractPiece::Reset(x,y,z);
+	incX = 0.0;
+	incY = -0.2;
+	incZ = 0.0;
+}
+
 void Piece::CreateContainer() {
 	container = PieceArray(size);
 
@@ -123,29 +130,6 @@ void Piece::RemoveGaps() {
 			}
 
 		}
-	}
-}
-
-void Piece::RemoveFullRows() {
-	for (int row = 0; row < size; row++) {
-		bool isRowFull = true;
-		for (int col = 0; col < size; col++) {
-			isRowFull &= container[col][row];
-		}
-
-		if (isRowFull) {
-			for (int col = 0; col < size; col++) {
-				container[col][row] = false;
-			}
-
-			for (int dropRow = row - 1; dropRow >= 0; dropRow--) {
-				for (int col = 0; col < size; col++) {
-					container[col][dropRow + 1] = container[col][dropRow];
-					container[col][dropRow] = false;
-				}
-			}
-		}
-
 	}
 }
 

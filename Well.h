@@ -32,6 +32,7 @@ private:
 
 	int maxCol, maxRow;
 	bool IsThereSpaceHere(int col, int row);
+	void RemoveFullRows();
 
 };
 

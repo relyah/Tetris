@@ -16,7 +16,7 @@
 class Piece : public AbstractPiece {
 
 public:
-	Piece(int size, float x, float y, float z);
+	Piece(int size, float x=0.0f, float y=0.0f, float z=0.0f);
 	virtual ~Piece();
 
 	void Reset(float x = 0.0, float y = 0.0, float z = 0.0);

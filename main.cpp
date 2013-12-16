@@ -24,11 +24,54 @@
 #define ROTATE_X 88//capital X
 #define RESTART 82//capital R
 
+GLuint program;
+GLuint textureId;
+GLint uniformMytexture;
+bool wellEmpty = true;
+bool isGameOver = false;
+bool isCameraRotate = false;
+bool isRotateY = false;
+bool isRotateX = false;
+bool isPause = false;
+glm::vec3 cameraPosition;
+glm::vec3 cameraLookAt;
+glm::vec3 cameraUp;
+glm::vec3 cameraRight;
+GLuint vs, fs;
+GLuint vbo_cube, vbo_fixed, vbo_grid, vbo_cube_next, vbo_billboard; //vertex buffer object
+GLuint ibo_cube_elements, ibo_fixed, ibo_cube_next, ibo_billboard; //index buffer object
+GLint attribute_coord3d, attribute_colour, attribute_normal;
+GLint uniform_m, uniform_v, uniform_p;
+int screen_width;
+int screen_height;
+glm::mat4 translate;
+glm::mat4 translate_fixed;
+glm::mat4 translate_next;
+glm::mat4 billboard_world;
+glm::vec3 billboard_cameraPosition;
+glm::vec3 billboard_cameraLookAt;
+glm::vec3 billboard_cameraUp;
+int specialKey = -1;
+unsigned char key;
+int moveDelay = 0;
+float yAngle;
+float xAngle;
+int prevxPos;
+int prevyPos;
+
+std::vector<Piece> pieces;
+int nextPiece;
+Well* well = 0;
+Piece* cp = 0;
+Piece* billboard = 0;
+GLFontWriter* glwriter;
+
 int InitProgram();
 void InitCamera();
 void InitWriter();
 void ResetCamera();
-void GenerateCameraView();
+void GenerateCameraView(glm::vec3 cp = cameraPosition, glm::vec3 cla = cameraLookAt, glm::vec3 cu = cameraUp,
+		bool isPost = true);
 void GenerateBuffers(AbstractPiece& p, GLuint& vbo, GLuint& ibo);
 void GenerateArrayBuffer(std::vector<float>& vertices, GLuint& vbo);
 void GenerateElementBuffer(std::vector<unsigned short>& elements, GLuint& ibo);
@@ -37,6 +80,7 @@ void MakePieces();
 void PickPiece();
 int PickRandomPiece();
 void LoadNextPiece();
+void InitBillboard();
 void Draw(glm::mat4 &translate, GLuint* vbo, GLuint* ibo, bool isWireFrame = false);
 
 struct attributes {
@@ -93,43 +137,6 @@ GLfloat cube[] = { -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0 };
 //   {{1.0,  1.0,  1.0},{0.0, 0.0},{1.0,0.0,0.0}},
 //};
 
-GLuint program;
-GLuint textureId;
-GLint uniformMytexture;
-bool wellEmpty = true;
-bool isGameOver = false;
-bool isCameraRotate = false;
-bool isRotateY = false;
-bool isRotateX = false;
-bool isPause = false;
-glm::vec3 cameraPosition;
-glm::vec3 cameraLookAt;
-glm::vec3 cameraUp;
-glm::vec3 cameraRight;
-GLuint vs, fs;
-GLuint vbo_cube, vbo_fixed, vbo_grid, vbo_cube_next; //vertex buffer object
-GLuint ibo_cube_elements, ibo_fixed, ibo_cube_next; //index buffer object
-GLint attribute_coord3d, attribute_colour, attribute_normal;
-GLint uniform_m, uniform_v, uniform_p;
-int screen_width;
-int screen_height;
-glm::mat4 translate;
-glm::mat4 translate_fixed;
-glm::mat4 translate_next;
-int specialKey = -1;
-unsigned char key;
-int moveDelay = 0;
-float yAngle;
-float xAngle;
-int prevxPos;
-int prevyPos;
-
-std::vector<Piece> pieces;
-int nextPiece;
-Well* well = 0;
-Piece* cp = 0;
-GLFontWriter* glwriter;
-
 int init_resources(void) {
 
 	InitProgram();
@@ -137,6 +144,7 @@ int init_resources(void) {
 	InitWriter();
 
 	InitWell();
+	InitBillboard();
 
 	return 1;
 }
@@ -278,9 +286,14 @@ void onDisplay() {
 	if (!isGameOver) {
 
 		Draw(translate, &vbo_cube, &ibo_cube_elements, true);
+		GenerateCameraView(billboard_cameraPosition, billboard_cameraLookAt, billboard_cameraUp, false);
 		Draw(translate_next, &vbo_cube_next, &ibo_cube_next);
-
+		GenerateCameraView();
 	}
+
+//	GenerateCameraView(billboard_cameraPosition, billboard_cameraLookAt, billboard_cameraUp, false);
+//	Draw(billboard_world, &vbo_billboard, &ibo_billboard);
+//	GenerateCameraView();
 
 	glwriter->Draw();
 
@@ -361,6 +374,8 @@ void free_resources() {
 	glDeleteTextures(1, &textureId);
 
 	pieces.clear();
+	cp = 0;
+	delete billboard;
 	delete well;
 	delete glwriter;
 }
@@ -524,6 +539,19 @@ int main(int argc, char* argv[]) {
 	return EXIT_SUCCESS;
 }
 
+void InitBillboard() {
+	billboard = new Piece(3);
+	billboard->Set(0, 0, true);
+	billboard->Set(0, 1, true);
+	billboard->Set(1, 0, true);
+	billboard->Set(1, 1, true);
+
+	GenerateBuffers(*billboard, vbo_billboard, ibo_billboard);
+
+	billboard_world =
+			glm::translate(glm::mat4(1.0f), glm::vec3(billboard->getX() - 10, billboard->getY() - 10, billboard->getZ()));
+}
+
 void InitWell() {
 	if (well != 0) {
 		delete well;
@@ -655,6 +683,10 @@ void InitCamera() {
 	cameraUp = glm::vec3(0.0, 1.0, 0.0); //up direction; probably glm::vec3(0,1,0), but (0,-1,0) would make you looking upside-down, which can be great too
 	cameraRight = glm::vec3(1.0, 0.0, 0.0);
 
+	billboard_cameraPosition = glm::vec3(10.0, -14.0, 40.0);
+	billboard_cameraLookAt = glm::vec3(10.0, -14.0, 0.0);
+	billboard_cameraUp = glm::vec3(0.0, 1.0, 0.0);
+
 	yAngle = 0.0f;
 	xAngle = 0.0f;
 	prevxPos = 0;
@@ -663,10 +695,12 @@ void InitCamera() {
 	GenerateCameraView();
 }
 
-void GenerateCameraView() {
+void GenerateCameraView(glm::vec3 cp, glm::vec3 cla, glm::vec3 cu, bool isPost) {
 	glUseProgram(program);
-	glm::mat4 view = glm::lookAt(cameraPosition, cameraLookAt, cameraUp);
+	glm::mat4 view = glm::lookAt(cp, cla, cu);
 	glUniformMatrix4fv(uniform_v, 1, GL_FALSE, glm::value_ptr(view));
-	glutPostRedisplay();
+	if (isPost) {
+		glutPostRedisplay();
+	}
 }
 

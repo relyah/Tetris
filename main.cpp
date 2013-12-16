@@ -12,6 +12,7 @@
 #include "resTexture.cpp"
 #include "Piece.h"
 #include "Well.h"
+#include "GLFontWriter.h"
 
 #define SPACEBAR 32
 #define ESCAPE 27
@@ -21,9 +22,11 @@
 #define PAUSE 80 // capital P
 #define ROTATE_Y 89//capital Y
 #define ROTATE_X 88//capital X
+#define RESTART 82//capital R
 
 int InitProgram();
 void InitCamera();
+void InitWriter();
 void ResetCamera();
 void GenerateCameraView();
 void GenerateBuffers(AbstractPiece& p, GLuint& vbo, GLuint& ibo);
@@ -125,11 +128,13 @@ std::vector<Piece> pieces;
 int nextPiece;
 Well* well = 0;
 Piece* cp = 0;
+GLFontWriter* glwriter;
 
 int init_resources(void) {
 
 	InitProgram();
 	InitCamera();
+	InitWriter();
 
 	InitWell();
 
@@ -195,6 +200,7 @@ void timerCallBack(int value) {
 					GenerateBuffers(*cp, vbo_cube, ibo_cube_elements);
 				} else {
 					isGameOver = true;
+					glwriter->Write("GAME OVER!",10,-0.3,0.0);
 				}
 			} else {
 				moveDelay++;
@@ -275,7 +281,11 @@ void onDisplay() {
 		Draw(translate, &vbo_cube, &ibo_cube_elements, true);
 		//NEXT PIECE BROKEN Draw(translate_next, &vbo_cube_next, &ibo_cube_next);
 
+	} else
+	{
+		glwriter->Draw();
 	}
+
 	/* Display the result */
 	glutSwapBuffers();
 
@@ -351,6 +361,10 @@ void free_resources() {
 	}
 
 	glDeleteTextures(1, &textureId);
+
+	pieces.clear();
+	delete well;
+	delete glwriter;
 }
 
 void onReshape(int width, int height) {
@@ -359,7 +373,7 @@ void onReshape(int width, int height) {
 	glViewport(0, 0, screen_width, screen_height);
 }
 
-void keyPressed(unsigned char key, int x, int y) {
+void onKeyPressed(unsigned char key, int x, int y) {
 	::key = toupper(key);
 
 	switch (::key) {
@@ -377,6 +391,9 @@ void keyPressed(unsigned char key, int x, int y) {
 		break;
 	case ROTATE_Y:
 		isRotateY = !isRotateY;
+		break;
+	case RESTART:
+		InitWell();
 		break;
 	}
 
@@ -489,7 +506,7 @@ int main(int argc, char* argv[]) {
 		glutDisplayFunc(onDisplay);
 		glutReshapeFunc(onReshape);
 
-		glutKeyboardFunc(keyPressed);
+		glutKeyboardFunc(onKeyPressed);
 		glutSpecialFunc(specialKeyPressed);
 		glutMouseFunc(onMouse);
 		glutMotionFunc(onMotion);
@@ -510,6 +527,12 @@ int main(int argc, char* argv[]) {
 }
 
 void InitWell() {
+	if (well!=0) {
+		delete well;
+		well = 0;
+	}
+	well = new Well(10, 14, 0.0, 0.0, 0.0);
+
 	MakePieces();
 	nextPiece = PickRandomPiece();
 	PickPiece();
@@ -518,6 +541,11 @@ void InitWell() {
 	well->MakeGrid(grid);
 	GenerateArrayBuffer(grid, vbo_grid);
 	GenerateBuffers(*cp, vbo_cube, ibo_cube_elements);
+	GenerateBuffers(*well, vbo_fixed, ibo_fixed);
+	glutPostRedisplay();
+
+	glutTimerFunc(100, timerCallBack, 0);
+	isGameOver = false;
 }
 
 void MakePieces() {
@@ -563,6 +591,7 @@ void MakePieces() {
 	zr.Set(1, 1, true);
 	zr.Set(0, 1, true);
 
+	pieces.clear();
 	pieces.push_back(sqr);
 	pieces.push_back(t);
 	pieces.push_back(i);
@@ -570,8 +599,6 @@ void MakePieces() {
 	pieces.push_back(ll);
 	pieces.push_back(zl);
 	pieces.push_back(zr);
-
-	well = new Well(10, 14, 0.0, 0.0, 0.0);
 }
 
 void PickPiece() {
@@ -611,6 +638,11 @@ int InitProgram() {
 	uniform_p = get_uniform(program, "projection");
 
 	return 1;
+}
+
+void InitWriter()
+{
+	glwriter = new GLFontWriter();
 }
 
 void ResetCamera() {

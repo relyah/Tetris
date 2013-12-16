@@ -45,12 +45,25 @@ public:
 		return z;
 	}
 
+	void setBlue(float blue) {
+		this->blue = blue;
+	}
+
+	void setGreen(float green) {
+		this->green = green;
+	}
+
+	void setRed(float red) {
+		this->red = red;
+	}
+
 protected:
 	float x, y, z;
 	int left;
 	int top;
 	int sideLength;
 	PieceArray container;
+	float red, green, blue;
 
 	virtual void CreateContainer()=0;
 	int GetSmallestDistance(int wellRow, int pieceRowInWell, int currentDistanc);

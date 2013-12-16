@@ -23,6 +23,7 @@ public:
 
 	void Write(std::string text, int maxLineLength, float xOffset, float yOffset);
 	void Draw();
+	void Clear();
 
 private:
 	unsigned char* textureData;

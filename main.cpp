@@ -200,7 +200,7 @@ void timerCallBack(int value) {
 					GenerateBuffers(*cp, vbo_cube, ibo_cube_elements);
 				} else {
 					isGameOver = true;
-					glwriter->Write("GAME OVER!",10,-0.3,0.0);
+					glwriter->Write("GAME OVER!", 10, -0.3, 0.0);
 				}
 			} else {
 				moveDelay++;
@@ -273,18 +273,16 @@ void onDisplay() {
 	if (!wellEmpty) {
 
 		Draw(translate_fixed, &vbo_fixed, &ibo_fixed);
-
 	}
 
 	if (!isGameOver) {
 
 		Draw(translate, &vbo_cube, &ibo_cube_elements, true);
-		//NEXT PIECE BROKEN Draw(translate_next, &vbo_cube_next, &ibo_cube_next);
+		Draw(translate_next, &vbo_cube_next, &ibo_cube_next);
 
-	} else
-	{
-		glwriter->Draw();
 	}
+
+	glwriter->Draw();
 
 	/* Display the result */
 	glutSwapBuffers();
@@ -414,7 +412,7 @@ void onMouseWheel(int button, int dir, int x, int y) {
 		zoomFactor = -0.5;
 	}
 
-	cameraPosition = cameraPosition +  zoomFactor * glm::normalize(cameraPosition - cameraLookAt);
+	cameraPosition = cameraPosition + zoomFactor * glm::normalize(cameraPosition - cameraLookAt);
 
 	GenerateCameraView();
 }
@@ -527,7 +525,7 @@ int main(int argc, char* argv[]) {
 }
 
 void InitWell() {
-	if (well!=0) {
+	if (well != 0) {
 		delete well;
 		well = 0;
 	}
@@ -603,12 +601,11 @@ void MakePieces() {
 
 void PickPiece() {
 	cp = &(pieces[nextPiece]);
-	nextPiece = PickRandomPiece();
-
-	LoadNextPiece();
-
 	cp->Reset();
 	cp->Move(4, 0, true);
+
+	nextPiece = PickRandomPiece();
+	LoadNextPiece();
 }
 
 int PickRandomPiece() {
@@ -618,15 +615,19 @@ int PickRandomPiece() {
 
 void LoadNextPiece() {
 	Piece np = pieces[nextPiece];
+	np.Reset();
 
 	GenerateBuffers(np, vbo_cube_next, ibo_cube_next);
 
-	translate_next = glm::translate(glm::mat4(1.0f), glm::vec3(np.getX() - 5, np.getY() - 1, np.getZ()));
+	translate_next = glm::translate(glm::mat4(1.0f), glm::vec3(np.getX() - 10, np.getY() - 1, np.getZ()));
+
+	glwriter->Write("Next Piece:", 12, -0.95, 0.95);
+	glwriter->Draw();
 
 }
 
 int InitProgram() {
-	program = create_program("cube.v.glsl", "cube.f.glsl",vs,fs);
+	program = create_program("cube.v.glsl", "cube.f.glsl", vs, fs);
 	if (program == 0)
 		return 0;
 	attribute_coord3d = get_attrib(program, "vertex_position");
@@ -640,8 +641,7 @@ int InitProgram() {
 	return 1;
 }
 
-void InitWriter()
-{
+void InitWriter() {
 	glwriter = new GLFontWriter();
 }
 

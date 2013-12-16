@@ -23,6 +23,9 @@ void AbstractPiece::Reset(float x, float y, float z) {
 	this->x = x;
 	this->y = y;
 	this->z = z;
+	red = 1.0f;
+	blue = 1.0f;
+	green = 1.0f;
 }
 
 void AbstractPiece::ConvertToCubes(std::vector<float> &cs, std::vector<unsigned short> &el) {
@@ -64,10 +67,10 @@ void AbstractPiece::ConvertToCubes(std::vector<float> &cs, std::vector<unsigned 
 			PushIntoVector(cs, b_tl, new float[3] { 0.0, 1.0, 0.0 }, new float[3] { 0.1, 0.8, 0.0 });
 
 			//back
-			PushIntoVector(cs, b_br, new float[3] { 0.0, 0.0, 1.0 }, new float[3] { 0.0, 0.0, 1.0 });
-			PushIntoVector(cs, b_bl, new float[3] { 0.0, 0.0, 1.0 }, new float[3] { 0.0, 0.0, 1.0 });
-			PushIntoVector(cs, b_tl, new float[3] { 0.0, 0.0, 1.0 }, new float[3] { 0.0, 0.0, 1.0 });
-			PushIntoVector(cs, b_tr, new float[3] { 0.0, 0.0, 1.0 }, new float[3] { 0.0, 0.0, 1.0 });
+			PushIntoVector(cs, b_br, new float[3] { 0.0, 0.0, 1.0 }, new float[3] { red, green, blue });
+			PushIntoVector(cs, b_bl, new float[3] { 0.0, 0.0, 1.0 }, new float[3] { red, green, blue });
+			PushIntoVector(cs, b_tl, new float[3] { 0.0, 0.0, 1.0 }, new float[3] { red, green, blue });
+			PushIntoVector(cs, b_tr, new float[3] { 0.0, 0.0, 1.0 }, new float[3] { red, green, blue });
 
 			//bottom
 			PushIntoVector(cs, b_bl, new float[3] { 0.0, -1.0, 0.0 }, new float[3] { 0.0, 0.5, 0.5 });
@@ -168,6 +171,4 @@ int AbstractPiece::GetSmallestDistance(int wellRow, int pieceRowInWell, int curr
 		return currentDistance;
 	}
 }
-
-
 

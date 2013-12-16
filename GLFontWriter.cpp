@@ -78,6 +78,11 @@ void GLFontWriter::Draw() {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+void GLFontWriter::Clear()
+{
+	textVector.clear();
+}
+
 void GLFontWriter::InitProgram() {
 	program = create_program("textshader.v.glsl", "textshader.f.glsl", vs, fs);
 	if (program == 0)
